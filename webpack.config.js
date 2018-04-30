@@ -3,10 +3,10 @@ const webpack = require('webpack');
 const FlowBabelWebpackPlugin = require('flow-babel-webpack-plugin');
 
 module.exports = {  
-  entry: './src/generic.js',
+  entry: './src/ison.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'generic.js',
+    filename: 'ison.js',
   },
   module: {
     rules: [
