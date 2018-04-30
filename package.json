@@ -1,8 +1,8 @@
 {
-  "name": "generic-js",
-  "version": "2.0.0",
-  "description": "generic function JS",
-  "main": "generic.js",
+  "name": "ison-js",
+  "version": "1.0.0",
+  "description": "ison function JS",
+  "main": "ison.js",
   "scripts": {
     "build": "webpack --mode=production",
     "test": "jest",
