@@ -44,12 +44,24 @@ const selectClass = (className: string): HTMLCollection<Elem> | null => document
 
 const selectTag = (tag: string): HTMLCollection<Elem> | null => document.getElementsByTagName(tag)
 
+const S = (selector: string): HTMLCollection<Elem> | null | Elem => {
+  const first = selector.charAt(0)
+  switch (first) {
+    case '.':
+      return selectClass(selector.slice(1,selector.length))
+    case '#':
+      return select(selector.slice(1,selector.length))
+    default:
+      return selectTag(selector)
+  }
+}
+
 const create = (tag: string): Elem => document.createElement(tag);
 
 const setElem = (name: string, tag: string, index?: number): Elem => {
   const elem = create(tag)
-    elem.id = index ? `${name}${index}` : name
-    elem.className = index ? `${index} ${name}`: name
+  elem.id = index ? `${name}${index}` : name
+  elem.className = index ? `${index} ${name}` : name
   return elem
 }
 
@@ -92,16 +104,7 @@ const setFix = setPos('fixed')
 
 const setZindex = (z: number = 0, ...elem: Elem[]): string[] => elem.map(e => e.style.zIndex = z.toString())
 
-const bkgColor = (color: string, ...elem: Elem[]): void => {
-  const reg: RegExp = /^#/;
-  elem.map(e => {
-    const result: string = reg.test(color)
-      ? color
-      : '#' + color
-    e.style.backgroundColor = hexToRgb(result)
-    return e
-  })
-}
+const bkgColor = (color: string, ...elem: Elem[]): string[] => elem.map(e => e.style.backgroundColor = color)
 
 const setPM = (type: string) => (x: number, ...elem: Elem[]): void => {
   const style: string[] = ['margin', 'padding']
@@ -203,8 +206,12 @@ const debugo = (obj: {}): string => {
   for (const key of Object.keys(obj)) {
     let kobj: string = '';
     if (typeof obj[key] === 'object') {
-      for (const k of Object.keys(obj[key])) {
-        kobj += '\n' + k + ' => ' + obj[key][k] + '\n'
+      if (key === 'append') {
+        kobj = obj[key].id
+      } else {
+        for (const k of Object.keys(obj[key])) {
+          kobj += '\n' + k + ' => ' + obj[key][k] + '\n'
+        }
       }
     } else {
       kobj = obj[key]
@@ -215,62 +222,88 @@ const debugo = (obj: {}): string => {
   return response
 }
 
-const createElement = (opt: OptionElement): Elem => {
-  const elem = setElem(opt.name, opt.tag, opt.index)
-  if (opt.display)
-    display(opt.display)(elem)
-  if (opt.position)
-    setPos(opt.position)(elem)
-  if (opt.width)
-    setWidth(opt.width, elem)
-  if (opt.height)
-    setHeight(opt.height, elem)
-  if (opt.top)
-    setTop(opt.top, elem)
-  if (opt.bottom)
-    setBottom(opt.bottom, elem)
-  if (opt.left)
-    setLeft(opt.left, elem)
-  if (opt.right)
-    setRight(opt.right, elem)
-  if (opt.opacity)
-    opacity(opt.opacity)(elem)
-  if (opt.zIndex)
-    setZindex(opt.zIndex, elem)
-  if (opt.bkgColor)
-    bkgColor(opt.bkgColor, elem)
-  if (opt.innerTxt)
-    innerTxt(opt.innerTxt, elem)
-  if (opt.margin)
-    setMargin(opt.margin, elem)
-  if (opt.padding)
-    setPadding(opt.padding, elem)
-  if (opt.append)
-    appendToDom(opt.append, elem)
-  if (opt.class)
-    addClass(opt.class, elem)
-  if (opt.style) {
-    const keys: string[] = Object.keys(opt.style)
-    const values: mixed[] = Object.values(opt.style)
-    keys.forEach((k, i) => {
-      if (typeof values[i] === 'string') elem.style.setProperty(k, values[i])
-    })
-  }
-  if (opt.src)
-    elem.src = opt.src
-  if (opt.href)
-    elem.href = opt.href
-  if (opt.type)
-    elem.type = opt.type
-  return elem
+function CreateElem(opt: OptionElement): void {
+  this.opt = opt;
+  this.name = opt.name;
+  this.tag = opt.tag;
+  this.index = opt.index;
+  this.display = opt.display;
+  this.position = opt.position;
+  this.width = opt.width;
+  this.height = opt.height;
+  this.top = opt.top;
+  this.bottom = opt.bottom;
+  this.right = opt.right;
+  this.left = opt.left;
+  this.opacity = opt.opacity;
+  this.zIndex = opt.zIndex;
+  this.bkgColor = opt.bkgColor;
+  this.innerTxt = opt.innerTxt;
+  this.margin = opt.margin;
+  this.padding = opt.padding;
+  this.append = opt.append;
+  this.class = opt.class;
+  this.src = opt.src;
+  this.href = opt.href;
+  this.type = opt.type;
+  this.style = opt.style;
+  this.elem
+  this.build();
+  return this.elem
 }
 
-const hexToRgb = (hex: string): string => {
-  const bigint: number = parseInt(hex, 16);
-  const r: number = (bigint >> 16) & 255;
-  const g: number = (bigint >> 8) & 255;
-  const b: number = bigint & 255;
-  return `rgb(${r}, ${g}, ${b})`;
+CreateElem.prototype = {
+  build: function (){
+    this.elem = setElem(this.name, this.tag, this.index)
+    if (this.display)
+      display(this.display)(this.elem)
+    if (this.position)
+      setPos(this.position)(this.elem)
+    if (this.width)
+      setWidth(this.width, this.elem)
+    if (this.height)
+      setHeight(this.height, this.elem)
+    if (this.top)
+      setTop(this.top, this.elem)
+    if (this.bottom)
+      setBottom(this.bottom, this.elem)
+    if (this.left)
+      setLeft(this.left, this.elem)
+    if (this.right)
+      setRight(this.right, this.elem)
+    if (this.opacity)
+      opacity(this.opacity)(this.elem)
+    if (this.zIndex)
+      setZindex(this.zIndex, this.elem)
+    if (this.bkgColor)
+      bkgColor(this.bkgColor, this.elem)
+    if (this.innerTxt)
+      innerTxt(this.innerTxt, this.elem)
+    if (this.margin)
+      setMargin(this.margin, this.elem)
+    if (this.padding)
+      setPadding(this.padding, this.elem)
+    if (this.append)
+      appendToDom(this.append, this.elem)
+    if (this.class)
+      addClass(this.class, this.elem)
+    if (this.style) {
+      const keys: string[] = Object.keys(this.style)
+      const values: mixed[] = Object.values(this.style)
+      keys.forEach((k, i) => {
+        if (typeof values[i] === 'string') this.elem.style.setProperty(k, values[i])
+      })
+    }
+    if (this.src)
+      this.elem.src = this.src
+    if (this.href)
+      this.elem.href = this.href
+    if (this.type)
+      this.elem.type = this.type
+  },
+  info: function (){
+    debugo(this.opt)
+  }
 }
 
 module.exports = {
@@ -281,6 +314,7 @@ module.exports = {
   select,
   selectClass,
   selectTag,
+  S,
   create,
   setElem,
   appendToDom,
@@ -316,5 +350,5 @@ module.exports = {
   remClass,
   toggleClass,
   debugo,
-  createElement
+  CreateElem
 }

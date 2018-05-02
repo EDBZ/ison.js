@@ -52,6 +52,12 @@ test('selectTag should return a array of element', () => {
   expect(I.selectTag('div')[0]).toEqual(divtest1)
 })
 
+test('S select all what you need', () => {
+  expect(I.S('#divtest1')).toEqual(divtest1)
+  expect(I.S('.divtest')[0]).toEqual(divtest1)
+  expect(I.S('div')[0]).toEqual(divtest1)
+})
+
 test('appendToDom should append an element to another', () => {
   I.appendToDom(divtest1, divtest2)
   expect(divtest2).toBe(divtest1.children[0])
@@ -99,7 +105,7 @@ test('setZindex should change z-index style of an element', () => {
 })
 
 test('bkgColor should change background-color style of an element', () => {
-  I.bkgColor('000', divtest1, divtest2)
+  I.bkgColor('#000', divtest1, divtest2)
   expect(divtest1.style.backgroundColor).toEqual('rgb(0, 0, 0)')
   expect(divtest2.style.backgroundColor).toEqual('rgb(0, 0, 0)')
 })
@@ -147,7 +153,7 @@ test('remClass should remove a class to a element', () => {
 })
 
 
-test('createElement should create an element', () => {
+test('CreateElem should create an element', () => {
   const obj = {
     name: 'test',
     tag: 'div',
@@ -161,7 +167,7 @@ test('createElement should create an element', () => {
     type: "test",
     append: divtest1
   }
-  const test = I.createElement(obj)
+  const test = new I.CreateElem(obj)
   expect(test instanceof HTMLDivElement).toBeTruthy()
   expect(test.id).toEqual('test1')
   expect(test.style.width).toEqual('10px')
