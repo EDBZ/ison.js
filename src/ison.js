@@ -201,6 +201,9 @@ const addClass = classe('add')
 const remClass = classe('remove')
 const toggleClass = classe('toggle')
 
+const event = (event: string) => (callback: Function, ...elem: Elem[]): void => elem.map(e => {e.addEventlistener(event, callback)})
+
+
 const debugo = (obj: {}): string => {
   let response: string = ''
   for (const key of Object.keys(obj)) {
@@ -349,6 +352,7 @@ module.exports = {
   addClass,
   remClass,
   toggleClass,
+  event,
   debugo,
   CreateElem
 }
