@@ -43,6 +43,16 @@ test('formatPortrait should be true if screen orientation is vertical', () => {
   expect(I.formatPortrait()).toBeTruthy()
 })
 
+//TODO:
+// test('size doit retourner un objet avec la taille disponible', ()=> {
+//   Object.defineProperty(window.screen, 'availWidth', { value: 300, writable: true });
+//   Object.defineProperty(window.screen, 'availHeight', { value: 600, writable: true });
+//   window.screen.availHeight = 600
+//   console.log('window.screen.availHeight: ', window.screen.availHeight);
+//   console.log(I.size);
+//   // expect(I.size).toBe({w:300, h:600})
+// })
+
 test('getInt should tranform a string size into int', () => {
   expect(I.getInt('666px')).toBe(666)
 })

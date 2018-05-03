@@ -54,6 +54,54 @@ const isLandscape = (): boolean => window.orientation === 90 || window.orientati
 
 const formatPortrait = (): boolean => window.orientation == 0
 
+const getW = (): number => {
+  let w: number = 0
+  const styleW = window.getComputedStyle(document.body, null).getPropertyValue('width')
+  w = parseInt(styleW.slice(0, -2), 10)
+  if (typeof w === 'number' && w !== 0) return w
+  if (window.innerWidth != null) {
+    w = window.innerWidth
+    if (typeof w === 'number' && w !== 0) return w
+  }
+  if (window.screen != null) {
+    w = window.screen.availWidth
+    if (typeof w === 'number' && w !== 0) return w
+  }
+  if (document.body != null) {
+    w = document.body === null ? w : document.body.clientWidth
+    if (typeof w === 'number' && w !== 0) return w
+  }
+  return w
+}
+
+const getH = (): number => {
+  let h: number = 0
+  console.log('window.innerHeight: ', window.innerHeight);
+  const styleH = window.getComputedStyle(document.body, null).getPropertyValue('height')
+  h = parseInt(styleH.slice(0, -2), 10)
+  if (typeof h === 'number' && h !== 0) return h
+  if (window.innerHeight != null) {
+    h = window.innerHeight
+    console.log('h: ', h);
+    if (typeof h === 'number' && h !== 0) return h
+  }
+  if (window.screen != null) {
+    h = window.screen.availHeight
+    console.log('h: ', h);
+    if (typeof h === 'number' && h !== 0) return h
+  }
+  if (document.body != null) {
+    h = document.body === null ? h : document.body.clientHeight
+    console.log('h: ', h);
+    if (typeof h === 'number' && h !== 0) return h
+  }
+  return h = 0
+}
+const size: { w: number, h: number } = {
+  w: getW(),
+  h: getH()
+}
+
 //SELECTORS ===============================================================================================================
 
 const select = (id: string): Elem | null => document.getElementById(id)
@@ -228,7 +276,6 @@ const setLeft = setDim('left')
 //TODO: VIDEO to CANVAS
 
 //EVENT ===============================================================================================================
-//TODO: 
 const eventHandler = (event: string) => (handleEvent: EventListener, elem: Elem, bubble?: boolean) => {
   elem.addEventListener(event, handleEvent, bubble)
 }
@@ -237,8 +284,6 @@ const click = eventHandler('click')
 const tstart = eventHandler('touchstart')
 const tmove = eventHandler('touchmove')
 const tend = eventHandler('touchend')
-
-
 
 //HELPERS ===============================================================================================================
 const debugo = (obj: {}): string => {
@@ -266,71 +311,43 @@ const debugo = (obj: {}): string => {
 
 function CreateElem(opt: OptionElement): void {
   this.opt = opt;
-  this.name = opt.name;
-  this.tag = opt.tag;
-  this.index = opt.index;
-  this.display = opt.display;
-  this.position = opt.position;
-  this.width = opt.width;
-  this.height = opt.height;
-  this.top = opt.top;
-  this.bottom = opt.bottom;
-  this.right = opt.right;
-  this.left = opt.left;
-  this.opacity = opt.opacity;
-  this.zIndex = opt.zIndex;
-  this.bkgColor = opt.bkgColor;
-  this.innerTxt = opt.innerTxt;
-  this.margin = opt.margin;
-  this.padding = opt.padding;
-  this.append = opt.append;
-  this.class = opt.class;
-  this.src = opt.src;
-  this.href = opt.href;
-  this.type = opt.type;
-  this.style = opt.style;
-  this.event = opt.event
-  this.tstart = opt.tstart
-  this.tmove = opt.tmove
-  this.tend = opt.tend
-  this.click = opt.click
   this.i
   this.build();
 }
 
 CreateElem.prototype = {
   build: function () {
-    this.i = setElem(this.name, this.tag, this.index)
-    if (this.display)display(this.display)(this.i)
-    if (this.position)setPos(this.position)(this.i)
-    if (this.width)setWidth(this.width, this.i)
-    if (this.height)setHeight(this.height, this.i)
-    if (this.top)setTop(this.top, this.i)
-    if (this.bottom)setBottom(this.bottom, this.i)
-    if (this.left)setLeft(this.left, this.i)
-    if (this.right)setRight(this.right, this.i)
-    if (this.opacity)opacity(this.opacity)(this.i)
-    if (this.zIndex)setZindex(this.zIndex, this.i)
-    if (this.bkgColor)bkgColor(this.bkgColor, this.i)
-    if (this.innerTxt)innerTxt(this.innerTxt, this.i)
-    if (this.margin)setMargin(this.margin, this.i)
-    if (this.padding)setPadding(this.padding, this.i)
-    if (this.append)appendToDom(this.append, this.i)
-    if (this.class)addClass(this.class, this.i)
-    if (this.style) {
-      const keys: string[] = Object.keys(this.style)
-      const values: mixed[] = Object.values(this.style)
+    this.i = setElem(this.opt.name, this.opt.tag, this.opt.index)
+    if (this.opt.display) display(this.opt.display)(this.i)
+    if (this.opt.position) setPos(this.opt.position)(this.i)
+    if (this.opt.width) setWidth(this.opt.width, this.i)
+    if (this.opt.height) setHeight(this.opt.height, this.i)
+    if (this.opt.top) setTop(this.opt.top, this.i)
+    if (this.opt.bottom) setBottom(this.opt.bottom, this.i)
+    if (this.opt.left) setLeft(this.opt.left, this.i)
+    if (this.opt.right) setRight(this.opt.right, this.i)
+    if (this.opt.opacity) opacity(this.opt.opacity)(this.i)
+    if (this.opt.zIndex) setZindex(this.opt.zIndex, this.i)
+    if (this.opt.bkgColor) bkgColor(this.opt.bkgColor, this.i)
+    if (this.opt.innerTxt) innerTxt(this.opt.innerTxt, this.i)
+    if (this.opt.margin) setMargin(this.opt.margin, this.i)
+    if (this.opt.padding) setPadding(this.opt.padding, this.i)
+    if (this.opt.append) appendToDom(this.opt.append, this.i)
+    if (this.opt.class) addClass(this.opt.class, this.i)
+    if (this.opt.style) {
+      const keys: string[] = Object.keys(this.opt.style)
+      const values: mixed[] = Object.values(this.opt.style)
       keys.forEach((k, i) => {
         if (typeof values[i] === 'string') this.i.style.setProperty(k, values[i])
       })
     }
-    if (this.src) this.i.src = this.src
-    if (this.href) this.i.href = this.href
-    if (this.type) this.i.type = this.type
-    if (this.tstart) tstart(this.tstart, this.i)
-    if (this.tmove) tmove(this.tmove, this.i)
-    if (this.tend) tend(this.tend, this.i)
-    if (this.click) click(this.click, this.i)
+    if (this.opt.src) this.i.src = this.opt.src
+    if (this.opt.href) this.i.href = this.opt.href
+    if (this.opt.type) this.i.type = this.opt.type
+    if (this.opt.tstart) tstart(this.opt.tstart, this.i)
+    if (this.opt.tmove) tmove(this.opt.tmove, this.i)
+    if (this.opt.tend) tend(this.opt.tend, this.i)
+    if (this.opt.click) click(this.opt.click, this.i)
   },
   info: function () {
     debugo(this.opt)
@@ -347,6 +364,7 @@ module.exports = {
   isIos,
   isLandscape,
   formatPortrait,
+  size,
   select,
   selectClass,
   selectTag,
