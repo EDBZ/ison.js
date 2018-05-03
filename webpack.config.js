@@ -5,10 +5,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const fs = require('fs');
 
 module.exports = {  
-  entry: './src/ison.js',
+  entry: {ison:'./src/ison.js', sandbox: './src/sandbox.js'},
   output: {
-    // path: path.resolve(__dirname, 'dist'),
-    filename: 'ison.js',
+    path: path.resolve(__dirname, 'dist'),
+    filename: '[name].js',
   },
   module: {
     rules: [

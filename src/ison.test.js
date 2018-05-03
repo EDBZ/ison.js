@@ -1,4 +1,5 @@
 const I = require('./ison')
+import sinon from 'sinon';
 
 const divtest1 = document.createElement('div')
 divtest1.id = 'divtest1'
@@ -155,7 +156,7 @@ test('remClass should remove a class to a element', () => {
 
 test('CreateElem should create an element', () => {
   const obj = {
-    name: 'test',
+    name: 'toto',
     tag: 'div',
     index: 1,
     style: {
@@ -164,18 +165,34 @@ test('CreateElem should create an element', () => {
     },
     href: 'www.foo.com',
     src: 'www.bar.com',
-    type: "test",
+    type: "video",
     append: divtest1
   }
   const test = new I.CreateElem(obj)
-  expect(test instanceof HTMLDivElement).toBeTruthy()
-  expect(test.id).toEqual('test1')
-  expect(test.style.width).toEqual('10px')
-  expect(test.style.border).toEqual('solid')
-  expect(test.href).toEqual('www.foo.com')
-  expect(test.src).toEqual('www.bar.com')
-  expect(test.type).toEqual('test')
-  expect(test).toBe(divtest1.children[0])
+  const toto = test.i
+  expect(toto instanceof HTMLDivElement).toBeTruthy()
+  expect(toto.id).toEqual('toto1')
+  expect(toto.style.width).toEqual('10px')
+  expect(toto.style.border).toEqual('solid')
+  expect(toto.href).toEqual('www.foo.com')
+  expect(toto.src).toEqual('www.bar.com')
+  expect(toto.type).toEqual('video')
+  expect(toto).toBe(divtest1.children[0])
+})
+
+test('event should handle an event', ()=> {
+  const mockclick1 = jest.fn()
+  const mockclick2 = jest.fn()
+  const mocktstsart = jest.fn()
+  I.eventHandler('click') (mockclick1, divtest1)
+  I.click(mockclick2, divtest1)
+  divtest1.click()
+  expect(mockclick1).toHaveBeenCalled()
+  expect(mockclick2).toHaveBeenCalled()
+  I.tstart(mocktstsart, divtest2)
+  const e = new Event('touchstart');
+  divtest2.dispatchEvent(e);  
+  expect(mocktstsart).toHaveBeenCalled()
 })
 
 

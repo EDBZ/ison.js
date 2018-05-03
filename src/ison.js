@@ -1,5 +1,7 @@
 //@flow
 
+
+//TYPE ===============================================================================================================
 type Elem = HTMLElement & { src?: string, type?: string, href?: string }
 
 type OptionElement = {
@@ -25,10 +27,20 @@ type OptionElement = {
   src?: string,
   href?: string,
   type?: string,
+  event?: Function,
+  tstart?: Function,
+  tmove?: Function,
+  tend?: Function,
+  click?: Function,
   style?: {...CSSStyleDeclaration }
 }
 
+//string replace ===============================================================================================================
+
 const px: string = 'px';
+const getInt = (elem: string): number => parseInt(elem.replace(px, ''), 10);
+
+//MOBILE CHECK ===============================================================================================================
 
 const isIos = (): boolean => navigator.userAgent.includes('iPhone') && !navigator.userAgent.includes('Safari')
 
@@ -36,7 +48,7 @@ const isLandscape = (): boolean => window.orientation === 90 || window.orientati
 
 const formatPortrait = (): boolean => window.orientation == 0
 
-const getInt = (elem: string): number => parseInt(elem.replace(px, ''), 10);
+//SELECTORS ===============================================================================================================
 
 const select = (id: string): Elem | null => document.getElementById(id)
 
@@ -48,13 +60,15 @@ const S = (selector: string): HTMLCollection<Elem> | null | Elem => {
   const first = selector.charAt(0)
   switch (first) {
     case '.':
-      return selectClass(selector.slice(1,selector.length))
+      return selectClass(selector.slice(1, selector.length))
     case '#':
-      return select(selector.slice(1,selector.length))
+      return select(selector.slice(1, selector.length))
     default:
       return selectTag(selector)
   }
 }
+
+//CREATOR ===============================================================================================================
 
 const create = (tag: string): Elem => document.createElement(tag);
 
@@ -64,6 +78,29 @@ const setElem = (name: string, tag: string, index?: number): Elem => {
   elem.className = index ? `${index} ${name}` : name
   return elem
 }
+
+const classe = (type: string) => (newclass: string, ...elem: Elem[]): Elem[] => elem.map(e => {
+  const classList: DOMTokenList = e.classList
+  switch (type) {
+    case 'add':
+      classList.add(newclass)
+      break;
+    case 'remove':
+      classList.remove(newclass)
+      break;
+    case 'toggle':
+      classList.toggle(newclass)
+      break;
+    default:
+      break;
+  }
+  return e
+})
+
+const addClass = classe('add')
+const remClass = classe('remove')
+const toggleClass = classe('toggle')
+
 
 const appendToDom = (container: Elem | 'body', ...elem: Elem[]): void => {
   elem.map(e => {
@@ -82,6 +119,7 @@ const appendToDom = (container: Elem | 'body', ...elem: Elem[]): void => {
   })
 }
 
+//CSS MANIP ===============================================================================================================
 
 const innerTxt = (text: string, ...elem: Elem[]): string[] => elem.map(e => e.innerHTML = text)
 
@@ -179,31 +217,24 @@ const setBottom = setDim('bottom')
 const setRight = setDim('right')
 const setLeft = setDim('left')
 
-const classe = (type: string) => (newclass: string, ...elem: Elem[]): Elem[] => elem.map(e => {
-  const classList: DOMTokenList = e.classList
-  switch (type) {
-    case 'add':
-      classList.add(newclass)
-      break;
-    case 'remove':
-      classList.remove(newclass)
-      break;
-    case 'toggle':
-      classList.toggle(newclass)
-      break;
-    default:
-      break;
-  }
-  return e
-})
+//TODO: styles function
 
-const addClass = classe('add')
-const remClass = classe('remove')
-const toggleClass = classe('toggle')
+//TODO: VIDEO to CANVAS
 
-const event = (event: string) => (callback: Function, ...elem: Elem[]): void => elem.map(e => {e.addEventlistener(event, callback)})
+//EVENT ===============================================================================================================
+//TODO: 
+const eventHandler = (event: string) => (handleEvent: EventListener, elem: Elem, bubble?: boolean) => {
+  elem.addEventListener(event, handleEvent, bubble)
+}
+
+const click = eventHandler('click')
+const tstart = eventHandler('touchstart')
+const tmove = eventHandler('touchmove')
+const tend = eventHandler('touchend')
 
 
+
+//HELPERS ===============================================================================================================
 const debugo = (obj: {}): string => {
   let response: string = ''
   for (const key of Object.keys(obj)) {
@@ -224,6 +255,8 @@ const debugo = (obj: {}): string => {
   console.log(`%c ${response}`, 'color: yellow')
   return response
 }
+
+//CreateElem COMPIL ===============================================================================================================
 
 function CreateElem(opt: OptionElement): void {
   this.opt = opt;
@@ -250,62 +283,54 @@ function CreateElem(opt: OptionElement): void {
   this.href = opt.href;
   this.type = opt.type;
   this.style = opt.style;
-  this.elem
+  this.event = opt.event
+  this.tstart = opt.tstart
+  this.tmove = opt.tmove
+  this.tend = opt.tend
+  this.click = opt.click
+  this.i
   this.build();
-  return this.elem
 }
 
 CreateElem.prototype = {
-  build: function (){
-    this.elem = setElem(this.name, this.tag, this.index)
-    if (this.display)
-      display(this.display)(this.elem)
-    if (this.position)
-      setPos(this.position)(this.elem)
-    if (this.width)
-      setWidth(this.width, this.elem)
-    if (this.height)
-      setHeight(this.height, this.elem)
-    if (this.top)
-      setTop(this.top, this.elem)
-    if (this.bottom)
-      setBottom(this.bottom, this.elem)
-    if (this.left)
-      setLeft(this.left, this.elem)
-    if (this.right)
-      setRight(this.right, this.elem)
-    if (this.opacity)
-      opacity(this.opacity)(this.elem)
-    if (this.zIndex)
-      setZindex(this.zIndex, this.elem)
-    if (this.bkgColor)
-      bkgColor(this.bkgColor, this.elem)
-    if (this.innerTxt)
-      innerTxt(this.innerTxt, this.elem)
-    if (this.margin)
-      setMargin(this.margin, this.elem)
-    if (this.padding)
-      setPadding(this.padding, this.elem)
-    if (this.append)
-      appendToDom(this.append, this.elem)
-    if (this.class)
-      addClass(this.class, this.elem)
+  build: function () {
+    this.i = setElem(this.name, this.tag, this.index)
+    if (this.display)display(this.display)(this.i)
+    if (this.position)setPos(this.position)(this.i)
+    if (this.width)setWidth(this.width, this.i)
+    if (this.height)setHeight(this.height, this.i)
+    if (this.top)setTop(this.top, this.i)
+    if (this.bottom)setBottom(this.bottom, this.i)
+    if (this.left)setLeft(this.left, this.i)
+    if (this.right)setRight(this.right, this.i)
+    if (this.opacity)opacity(this.opacity)(this.i)
+    if (this.zIndex)setZindex(this.zIndex, this.i)
+    if (this.bkgColor)bkgColor(this.bkgColor, this.i)
+    if (this.innerTxt)innerTxt(this.innerTxt, this.i)
+    if (this.margin)setMargin(this.margin, this.i)
+    if (this.padding)setPadding(this.padding, this.i)
+    if (this.append)appendToDom(this.append, this.i)
+    if (this.class)addClass(this.class, this.i)
     if (this.style) {
       const keys: string[] = Object.keys(this.style)
       const values: mixed[] = Object.values(this.style)
       keys.forEach((k, i) => {
-        if (typeof values[i] === 'string') this.elem.style.setProperty(k, values[i])
+        if (typeof values[i] === 'string') this.i.style.setProperty(k, values[i])
       })
     }
-    if (this.src)
-      this.elem.src = this.src
-    if (this.href)
-      this.elem.href = this.href
-    if (this.type)
-      this.elem.type = this.type
+    if (this.src) this.i.src = this.src
+    if (this.href) this.i.href = this.href
+    if (this.type) this.i.type = this.type
+    if (this.tstart) tstart(this.tstart, this.i)
+    if (this.tmove) tmove(this.tmove, this.i)
+    if (this.tend) tend(this.tend, this.i)
+    if (this.click) click(this.click, this.i)
   },
-  info: function (){
+  info: function () {
     debugo(this.opt)
+  },
+  _event: function (e: string, fn: Function) {
+    eventHandler(e)(fn, this.i)
   }
 }
 
@@ -352,7 +377,11 @@ module.exports = {
   addClass,
   remClass,
   toggleClass,
-  event,
+  eventHandler,
+  tstart,
+  tmove,
+  tend,
+  click,
   debugo,
   CreateElem
 }
