@@ -17,6 +17,12 @@ test('px should return "px"', () => {
   expect(I.px).toBe('px')
 })
 
+test('amMraid should be true if mraid', () => {
+  expect(I.amMraid()).toBeFalsy()
+  Object.defineProperty(window, 'mraid', { value: {}, configurable: true });
+  expect(I.amMraid()).toBeTruthy()
+})
+
 test('isIos should be true if navigator userAgent is Ios', () => {
   Object.defineProperty(window.navigator, 'userAgent', { value: 'iPhone', configurable: true });
   expect(I.isIos()).toBeTruthy()

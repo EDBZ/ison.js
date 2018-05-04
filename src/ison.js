@@ -35,10 +35,16 @@ type OptionElement = {
   style?: {...CSSStyleDeclaration }
 }
 
+console.log(window.mraid);
 //string replace ===============================================================================================================
 
 const px: string = 'px';
+
 const getInt = (elem: string): number => parseInt(elem.replace(px, ''), 10);
+
+//MRAID ===============================================================================================================
+
+const amMraid = (): boolean => window.mraid !== undefined
 
 //MOBILE CHECK ===============================================================================================================
 
@@ -336,6 +342,8 @@ CreateElem.prototype = {
 
 module.exports = {
   px,
+  getInt,
+  amMraid,
   isIos,
   isLandscape,
   formatPortrait,
@@ -347,7 +355,6 @@ module.exports = {
   setElem,
   appendToDom,
   innerTxt,
-  getInt,
   opacity,
   opacity0,
   opacity1,

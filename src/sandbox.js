@@ -25,3 +25,4 @@ I.eventHandler('click')(()=>{console.log('pouet')}, test.i)
      border: '5px solid yellow'
     }
   })
+console.log('I.amMraid(): ', I.amMraid());
