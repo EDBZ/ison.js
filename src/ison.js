@@ -35,7 +35,12 @@ type OptionElement = {
 
 type Size = { w: number, h: number }
 
-
+type SrcType = {
+  url: string,
+  width: number,
+  height: number,
+  type: string
+}
 
 //createNewCreative ===============================================================================================================
 
@@ -383,7 +388,62 @@ CreateElem.prototype = {
   }
 }
 
+const videoToCanvas = (src: SrcType, container: Elem, w: number, h: number) => {
+  const video = document.createElement('video')
+  video.id = 'video'
+  video.classList.add('video')
+  video.style.position = 'absolute'
+  // video.style.opacity= '0'
+  video.preload = 'auto'
+  video.autoplay = true
+  video.defaultMuted = true
+  video.muted = true
+  let webKitPlayInline = document.createAttribute('webkit-playsinline')
+  video.setAttribute('crossorigin', 'anonymous')
+  video.setAttributeNode(webKitPlayInline)
+  let att = document.createAttribute("playsinline")
+  video.setAttributeNode(att)
+  container.appendChild(video)
 
+  const s = new CreateElem({
+    name: 'source',
+    tag: 'source',
+    src: src.url,
+    type: 'video/mp4',
+    append: video
+  })
+
+  const c = document.createElement('canvas')
+  c.id= 'canvas'
+  new CreateElem({
+    name: 'canvas',
+    tag: 'canvas',
+    position: 'absolute',
+    height: '100',
+    style: {
+      top: '0px'
+    },
+    left: (w - ((src.width * h) / src.height)) / 2,
+    append: container
+  })
+
+  video.addEventListener('play', function draw(video, context, cw, ch) {
+    // displayNone(select('startelem'))
+    const canvas = c.i
+    var context = canvas.getContext('2d');
+    var cw = (src.width * h) / src.height;
+    var ch = h;
+    // canvasW = cw;
+    canvas.width = cw;
+    canvas.height = ch;
+    // if (!started) G.setLeft((w - ((src.width * h) / src.height)) / 2, canvas)
+    // if (video.ended) return false;
+    // started = true
+    context.drawImage(video, 0, 0, cw, ch);
+    setTimeout(draw, 20, video, context, cw, ch);
+
+  })
+}
 
 module.exports = {
   createNewCreative,
@@ -438,5 +498,6 @@ module.exports = {
   tend,
   click,
   debugo,
-  CreateElem
+  CreateElem,
+  videoToCanvas
 }
