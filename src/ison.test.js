@@ -1,8 +1,6 @@
 const I = require('./ison')
 import sinon from 'sinon';
 
-I.computeSize().then(r => console.log(r))
-
 const divtest1 = document.createElement('div')
 divtest1.id = 'divtest1'
 divtest1.classList += '1 divtest'
@@ -46,9 +44,8 @@ test('formatPortrait should be true if screen orientation is vertical', () => {
 })
 
 //TODO: async check for size...
-test('size doit retourner un objet avec la taille disponible', () => {
-console.log(window.creativeSize);
-})
+// test('size doit retourner un objet avec la taille disponible', () => {
+// })
 
 test('getInt should tranform a string size into int', () => {
   expect(I.getInt('666px')).toBe(666)
