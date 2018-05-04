@@ -1,6 +1,5 @@
 //@flow
 
-
 //TYPE ===============================================================================================================
 type Elem = HTMLElement & { src?: string, type?: string, href?: string }
 
@@ -35,7 +34,11 @@ type OptionElement = {
   style?: {...CSSStyleDeclaration }
 }
 
-console.log(window.mraid);
+type Size = { w: number, h: number }
+
+
+
+
 //string replace ===============================================================================================================
 
 const px: string = 'px';
@@ -46,6 +49,14 @@ const getInt = (elem: string): number => parseInt(elem.replace(px, ''), 10);
 
 const amMraid = (): boolean => window.mraid !== undefined
 
+const mraidReady = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    window.mraid.addEventListener('ready', () => {
+      resolve(true)
+    })
+  })
+}
+
 //MOBILE CHECK ===============================================================================================================
 
 const isIos = (): boolean => navigator.userAgent.includes('iPhone') && !navigator.userAgent.includes('Safari')
@@ -54,52 +65,39 @@ const isLandscape = (): boolean => window.orientation === 90 || window.orientati
 
 const formatPortrait = (): boolean => window.orientation == 0
 
-const getW = (): number => {
-  let w: number = 0
-  const styleW = window.getComputedStyle(document.body, null).getPropertyValue('width')
-  w = parseInt(styleW.slice(0, -2), 10)
-  if (typeof w === 'number' && w !== 0) return w
-  if (window.innerWidth != null) {
-    w = window.innerWidth
-    if (typeof w === 'number' && w !== 0) return w
-  }
-  if (window.screen != null) {
-    w = window.screen.availWidth
-    if (typeof w === 'number' && w !== 0) return w
-  }
-  if (document.body != null) {
-    w = document.body === null ? w : document.body.clientWidth
-    if (typeof w === 'number' && w !== 0) return w
-  }
-  return w
+//SIZE ===============================================================================================================
+
+const getSize = (): Promise<Size> => {
+  return new Promise((resolve, reject) => {
+    var sizedDiv = document.createElement("div");
+    sizedDiv.style.cssText = "position: fixed;top: 0;left: 0;bottom: 0;right: 0;";
+    const computedH = window.getComputedStyle(sizedDiv, null).getPropertyValue('height')
+    if (document.documentElement !== null) document.documentElement.insertBefore(sizedDiv, document.documentElement.firstChild);
+    if (sizedDiv.offsetWidth !== undefined && sizedDiv.offsetHeight !== undefined) {
+      resolve({ w: sizedDiv.offsetWidth, h: sizedDiv.offsetHeight })
+      if (document.documentElement !== null) document.documentElement.removeChild(sizedDiv)
+    }
+  })
 }
 
-const getH = (): number => {
-  let h: number = 0
-  console.log('window.innerHeight: ', window.innerHeight);
-  const styleH = window.getComputedStyle(document.body, null).getPropertyValue('height')
-  h = parseInt(styleH.slice(0, -2), 10)
-  if (typeof h === 'number' && h !== 0) return h
-  if (window.innerHeight != null) {
-    h = window.innerHeight
-    console.log('h: ', h);
-    if (typeof h === 'number' && h !== 0) return h
-  }
-  if (window.screen != null) {
-    h = window.screen.availHeight
-    console.log('h: ', h);
-    if (typeof h === 'number' && h !== 0) return h
-  }
-  if (document.body != null) {
-    h = document.body === null ? h : document.body.clientHeight
-    console.log('h: ', h);
-    if (typeof h === 'number' && h !== 0) return h
-  }
-  return h = 0
+async function getMRAIDSize(): Promise<Size> {
+  const s = await getSize()
+  const ready = await mraidReady()
+  return ready
+    ? { w: window.mraid.getCurrentPosition().width, h: window.mraid.getCurrentPosition().height }
+    : { w: s.w, h: s.h }
 }
-const size: { w: number, h: number } = {
-  w: getW(),
-  h: getH()
+
+async function computeSize(): Promise<Size> {
+  const s = amMraid() ? await getMRAIDSize() : await getSize()
+  window.creativeSize = {
+    w: s.w,
+    h: s.h
+  }
+  return {
+    w: s.w,
+    h: s.h
+  }
 }
 
 //SELECTORS ===============================================================================================================
@@ -357,6 +355,8 @@ CreateElem.prototype = {
   }
 }
 
+
+
 module.exports = {
   px,
   getInt,
@@ -364,7 +364,7 @@ module.exports = {
   isIos,
   isLandscape,
   formatPortrait,
-  size,
+  computeSize,
   select,
   selectClass,
   selectTag,

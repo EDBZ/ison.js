@@ -1,6 +1,8 @@
 const I = require('./ison')
 import sinon from 'sinon';
 
+I.computeSize().then(r => console.log(r))
+
 const divtest1 = document.createElement('div')
 divtest1.id = 'divtest1'
 divtest1.classList += '1 divtest'
@@ -43,15 +45,10 @@ test('formatPortrait should be true if screen orientation is vertical', () => {
   expect(I.formatPortrait()).toBeTruthy()
 })
 
-//TODO:
-// test('size doit retourner un objet avec la taille disponible', ()=> {
-//   Object.defineProperty(window.screen, 'availWidth', { value: 300, writable: true });
-//   Object.defineProperty(window.screen, 'availHeight', { value: 600, writable: true });
-//   window.screen.availHeight = 600
-//   console.log('window.screen.availHeight: ', window.screen.availHeight);
-//   console.log(I.size);
-//   // expect(I.size).toBe({w:300, h:600})
-// })
+//TODO: async check for size...
+test('size doit retourner un objet avec la taille disponible', () => {
+console.log(window.creativeSize);
+})
 
 test('getInt should tranform a string size into int', () => {
   expect(I.getInt('666px')).toBe(666)
@@ -196,18 +193,18 @@ test('CreateElem should create an element', () => {
   expect(toto).toBe(divtest1.children[0])
 })
 
-test('event should handle an event', ()=> {
+test('event should handle an event', () => {
   const mockclick1 = jest.fn()
   const mockclick2 = jest.fn()
   const mocktstsart = jest.fn()
-  I.eventHandler('click') (mockclick1, divtest1)
+  I.eventHandler('click')(mockclick1, divtest1)
   I.click(mockclick2, divtest1)
   divtest1.click()
   expect(mockclick1).toHaveBeenCalled()
   expect(mockclick2).toHaveBeenCalled()
   I.tstart(mocktstsart, divtest2)
   const e = new Event('touchstart');
-  divtest2.dispatchEvent(e);  
+  divtest2.dispatchEvent(e);
   expect(mocktstsart).toHaveBeenCalled()
 })
 

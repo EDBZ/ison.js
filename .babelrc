@@ -3,6 +3,10 @@
     "env"
   ],
   "plugins" : [
-    "transform-flow-comments"
+    "transform-flow-comments",
+    ["transform-runtime", {
+      "polyfill": false,
+      "regenerator": true
+    }]
   ]
 }
