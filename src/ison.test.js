@@ -13,6 +13,11 @@ document.body.appendChild(divtest2)
 
 const objTest = { foo: 'bar', hello: 'world', kow: { abu: 1, nga: 2 } }
 
+test('createNewCreative should build a body', ()=> {
+  I.createNewCreative('test', ()=>{})
+  // expect(document.title)
+})
+
 test('px should return "px"', () => {
   expect(I.px).toBe('px')
 })
@@ -42,10 +47,6 @@ test('formatPortrait should be true if screen orientation is vertical', () => {
   Object.defineProperty(window, 'orientation', { value: 0, writable: true });
   expect(I.formatPortrait()).toBeTruthy()
 })
-
-//TODO: async check for size...
-// test('size doit retourner un objet avec la taille disponible', () => {
-// })
 
 test('getInt should tranform a string size into int', () => {
   expect(I.getInt('666px')).toBe(666)

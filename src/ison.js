@@ -1,5 +1,4 @@
 //@flow
-
 //TYPE ===============================================================================================================
 type Elem = HTMLElement & { src?: string, type?: string, href?: string }
 
@@ -38,6 +37,52 @@ type Size = { w: number, h: number }
 
 
 
+//createNewCreative ===============================================================================================================
+
+const createNewCreative = (format: string, cb: Function) => {
+  return new Promise((resolve, reject) => {
+    let win = window
+    let doc = document
+    console.log('doc: ', doc);
+    var oldLoad = win.onload;
+    if (typeof win.onload != "function") {
+      win.onload = windowLoad;
+    } else {
+      win.onload = function () {
+        oldLoad();
+        windowLoad();
+      }
+    }
+    function windowLoad() {
+      const mainBody = doc.body;
+      const head = doc.head
+      if (mainBody) {
+        mainBody.style.cssText = "position: fixed;top: 0;left: 0;bottom: 0;right: 0; width: 100%; height: 100%;";
+        setMargin(0, mainBody)
+        displayFlex(mainBody)
+        console.log('mainBody: ', mainBody.style);
+      }
+      const meta = create('meta')
+      meta.setAttribute('name', 'viewport')
+      meta.setAttribute('content', 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=yes')
+      meta.setAttribute('charset', 'utf-8')
+      const title = create('title')
+      innerTxt(format + ' - Tabmo ©', title)
+      const favicon = create('link')
+      favicon.setAttribute('rel', 'icon')
+      favicon.setAttribute('type', 'image/x-icon')
+      favicon.setAttribute('href', 'https://s3-eu-west-1.amazonaws.com/static.tabmo.io/Auto/utilsFormats/assets/favicon.ico')
+      if (head) appendToDom(head, meta, favicon, title)
+      computeSize()
+        .then(r => {
+          cb()
+        })
+        .catch(er => {
+          console.error(er)
+        })
+    }
+  })
+}
 
 //string replace ===============================================================================================================
 
@@ -49,14 +94,6 @@ const getInt = (elem: string): number => parseInt(elem.replace(px, ''), 10);
 
 const amMraid = (): boolean => window.mraid !== undefined
 
-const mraidReady = (): Promise<boolean> => {
-  return new Promise((resolve) => {
-    window.mraid.addEventListener('ready', () => {
-      resolve(true)
-    })
-  })
-}
-
 //MOBILE CHECK ===============================================================================================================
 
 const isIos = (): boolean => navigator.userAgent.includes('iPhone') && !navigator.userAgent.includes('Safari')
@@ -67,37 +104,28 @@ const formatPortrait = (): boolean => window.orientation == 0
 
 //SIZE ===============================================================================================================
 
-const getSize = (): Promise<Size> => {
+async function getSize(elem: HTMLElement): Promise<Size> {
   return new Promise((resolve, reject) => {
-    var sizedDiv = document.createElement("div");
-    sizedDiv.style.cssText = "position: fixed;top: 0;left: 0;bottom: 0;right: 0;";
-    const computedH = window.getComputedStyle(sizedDiv, null).getPropertyValue('height')
-    if (document.documentElement !== null) document.documentElement.insertBefore(sizedDiv, document.documentElement.firstChild);
-    if (sizedDiv.offsetWidth !== undefined && sizedDiv.offsetHeight !== undefined) {
-      resolve({ w: sizedDiv.offsetWidth, h: sizedDiv.offsetHeight })
-      if (document.documentElement !== null) document.documentElement.removeChild(sizedDiv)
-    }
+    let i = 0
+    const interval = setInterval(() => {
+      i++
+      if (i <= 25) {
+        if (elem.offsetHeight !== 0) {
+          clearInterval(interval)
+          resolve(window.creativeSize = { w: elem.offsetWidth, h: elem.offsetHeight })
+        }
+      } else {
+        clearInterval(interval)
+        reject("ERROR : I can't compute Creative Size")
+      }
+    }, 10)
   })
 }
 
-async function getMRAIDSize(): Promise<Size> {
-  const s = await getSize()
-  const ready = await mraidReady()
-  return ready
-    ? { w: window.mraid.getCurrentPosition().width, h: window.mraid.getCurrentPosition().height }
-    : { w: s.w, h: s.h }
-}
-
-async function computeSize(): Promise<Size> {
-  const s = amMraid() ? await getMRAIDSize() : await getSize()
-  window.creativeSize = {
-    w: s.w,
-    h: s.h
-  }
-  return {
-    w: s.w,
-    h: s.h
-  }
+async function computeSize(): Promise<Size | void> {
+  return new Promise((resolve, reject) => {
+    if (document.body != null) getSize(document.body).then(r => resolve(window.creativeSize))
+  })
 }
 
 //SELECTORS ===============================================================================================================
@@ -358,9 +386,11 @@ CreateElem.prototype = {
 
 
 module.exports = {
+  createNewCreative,
   px,
   getInt,
   amMraid,
+  getSize,
   isIos,
   isLandscape,
   formatPortrait,
