@@ -1,5 +1,9 @@
 //@flow
-//TYPE ===============================================================================================================
+
+// =============================================================================
+// MARK: TYPE
+// =============================================================================
+
 type Elem = HTMLElement & { src?: string, type?: string, href?: string }
 
 type OptionElement = {
@@ -42,13 +46,15 @@ type SrcType = {
   type: string
 }
 
-//createNewCreative ===============================================================================================================
+
+// =============================================================================
+// MARK: createNewCreative
+// =============================================================================
 
 const createNewCreative = (format: string, cb: Function) => {
   return new Promise((resolve, reject) => {
     let win = window
     let doc = document
-    console.log('doc: ', doc);
     var oldLoad = win.onload;
     if (typeof win.onload != "function") {
       win.onload = windowLoad;
@@ -65,7 +71,6 @@ const createNewCreative = (format: string, cb: Function) => {
         mainBody.style.cssText = "position: fixed;top: 0;left: 0;bottom: 0;right: 0; width: 100%; height: 100%;";
         setMargin(0, mainBody)
         displayFlex(mainBody)
-        console.log('mainBody: ', mainBody.style);
       }
       const meta = create('meta')
       meta.setAttribute('name', 'viewport')
@@ -89,17 +94,25 @@ const createNewCreative = (format: string, cb: Function) => {
   })
 }
 
-//string replace ===============================================================================================================
+// =============================================================================
+// MARK: string replace 
+// =============================================================================
+
 
 const px: string = 'px';
 
 const getInt = (elem: string): number => parseInt(elem.replace(px, ''), 10);
 
-//MRAID ===============================================================================================================
+// =============================================================================
+// MARK: MRAID
+// =============================================================================
 
 const amMraid = (): boolean => window.mraid !== undefined
 
-//MOBILE CHECK ===============================================================================================================
+
+// =============================================================================
+// MARK: Mobile check
+// =============================================================================
 
 const isIos = (): boolean => navigator.userAgent.includes('iPhone') && !navigator.userAgent.includes('Safari')
 
@@ -107,9 +120,11 @@ const isLandscape = (): boolean => window.orientation === 90 || window.orientati
 
 const formatPortrait = (): boolean => window.orientation == 0
 
-//SIZE ===============================================================================================================
+// =============================================================================
+// MARK: Size
+// =============================================================================
 
-async function getSize(elem: HTMLElement): Promise<Size> {
+async function getSize(elem: HTMLElement | HTMLBodyElement): Promise<Size> {
   return new Promise((resolve, reject) => {
     let i = 0
     const interval = setInterval(() => {
@@ -117,7 +132,11 @@ async function getSize(elem: HTMLElement): Promise<Size> {
       if (i <= 25) {
         if (elem.offsetHeight !== 0) {
           clearInterval(interval)
-          resolve(window.creativeSize = { w: elem.offsetWidth, h: elem.offsetHeight })
+          if (elem instanceof HTMLBodyElement) {
+            resolve(window.creativeSize = { w: elem.offsetWidth, h: elem.offsetHeight })
+          } else {
+            resolve({ w: elem.offsetWidth, h: elem.offsetHeight })
+          }
         }
       } else {
         clearInterval(interval)
@@ -133,7 +152,9 @@ async function computeSize(): Promise<Size | void> {
   })
 }
 
-//SELECTORS ===============================================================================================================
+// =============================================================================
+// MARK: SELECTORS
+// =============================================================================
 
 const select = (id: string): Elem | null => document.getElementById(id)
 
@@ -153,8 +174,11 @@ const S = (selector: string): HTMLCollection<Elem> | null | Elem => {
   }
 }
 
-//CREATOR ===============================================================================================================
+const have = (elem: any):boolean => elem !== undefined
 
+// =============================================================================
+// MARK: CREATORS
+// =============================================================================
 const create = (tag: string): Elem => document.createElement(tag);
 
 const setElem = (name: string, tag: string, index?: number): Elem => {
@@ -204,8 +228,9 @@ const appendToDom = (container: Elem | 'body', ...elem: Elem[]): void => {
   })
 }
 
-//CSS MANIP ===============================================================================================================
-
+// =============================================================================
+// MARK: CSS MANIP
+// =============================================================================
 const innerTxt = (text: string, ...elem: Elem[]): string[] => elem.map(e => e.innerHTML = text)
 
 const opacity = (lvl: number) => (...elem: Elem[]): string[] => elem.map(e => e.style.opacity = lvl.toString())
@@ -304,9 +329,142 @@ const setLeft = setDim('left')
 
 //TODO: styles function
 
-//TODO: VIDEO to CANVAS
+// =============================================================================
+// MARK: VIDEO to CANVAS
+// =============================================================================
+function VideoOnCanvas(src: SrcType | string, container: Elem, size: Size) {
+  this.src = src
+  this.container = container
+  this.size = size
+  this.builtVideo()
+}
 
-//EVENT ===============================================================================================================
+VideoOnCanvas.prototype = {
+  builtVideo: function () {
+    this.video = document.createElement('video')
+    this.video.id = 'video'
+    this.video.classList.add('video')
+    this.video.style.position = 'absolute'
+    this.video.style.opacity = '0'
+    this.video.preload = 'auto'
+    this.video.autoplay = true
+    this.video.defaultMuted = true
+    this.video.muted = true
+    this.video.style.width = '100px'
+    this.video.style.height = 'auto'
+    let webKitPlayInline = document.createAttribute('webkit-playsinline')
+    this.video.setAttribute('crossorigin', 'anonymous')
+    this.video.setAttributeNode(webKitPlayInline)
+    let att = document.createAttribute("playsinline")
+    this.video.setAttributeNode(att)
+    this.container.appendChild(this.video)
+    const s = new CreateElem({
+      name: 'source',
+      tag: 'source',
+      src: typeof this.src == 'string' ? this.src : this.src.url,
+      type: 'video/mp4',
+      append: this.video
+    })
+    this.builtCanvas()
+    return this
+  },
+  builtCanvas: function () {
+    this.canvas = document.createElement('canvas')
+    this.canvas.id = 'canvas'
+    this.canvas.classList.add('canvas')
+    this.canvas.style.position = 'absolute'
+    if (typeof this.src == 'string') {
+      this.video.addEventListener('loadedmetadata', () => {
+        getSize(this.video).then(r => {
+          this.canvas.width = (r.w * this.size.h) / r.h;
+          this.canvas.height = this.size.h
+          this.canvas.style.left = (this.size.w - ((r.w * this.size.h) / r.h)) / 2 + 'px'
+          this.container.appendChild(this.canvas)
+        })
+      })
+    } else {
+      this.canvas.width = (this.src.width * this.size.h) / this.src.height;
+      this.canvas.height = this.size.h
+      this.canvas.style.left = (this.size.w - ((this.src.width * this.size.h) / this.src.height)) / 2 + 'px'
+      this.container.appendChild(this.canvas)
+    }
+    return this
+  },
+  play: function () {
+    playCanvas(this)
+    return this
+  },
+  firstQuartile: function (tracker: string) {
+    makeTracker(this, 'firstQuartile', 0.25, tracker)
+    return this
+
+  },
+  midPoint: function (tracker: string) {
+    makeTracker(this, 'midPoint', 0.5, tracker)
+    return this
+  },
+  thirdQuartile: function (tracker: string) {
+    makeTracker(this, 'thirdQuartile', 0.75, tracker)
+    return this
+  },
+  complete: function (tracker: string) {
+    makeTracker(this, 'complete', 0.99, tracker)
+    return this
+  },
+  clickable: function (time: number, tracker: string) {
+    makeTracker(this, 'clickable', time, tracker, true)
+    return this
+  }
+}
+
+const playCanvas = (elem: any) => {
+  elem.video.addEventListener('play', () => {
+    if (elem.video.paused || elem.video.ended) return;
+    draw(elem.video, elem.canvas)
+  })
+}
+
+const draw = (video: HTMLVideoElement, canvas: HTMLCanvasElement) => {
+  let ctx = canvas.getContext('2d')
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+  requestAnimationFrame(() => draw(video, canvas))
+}
+
+const makeTracker = (object: { video: HTMLVideoElement, container: Elem }, name: string, time: number, src: string, clickable?: boolean = false) => {
+  var elem
+  object.video.addEventListener('timeupdate', function (e) {
+    if (e.target instanceof HTMLVideoElement) {
+      if (e.target.currentTime >= e.target.duration * time && elem === undefined) {
+        if(clickable) {
+          elem = new CreateElem({
+            name: name,
+            tag: 'a',
+            href: src,
+            width: window.creativeSize.w,
+            height: window.creativeSize.h,
+            position: 'absolute',
+            zIndex: 5000,
+            append: object.container
+          })
+        }else {
+          elem = new CreateElem({
+            name: name,
+            tag: 'img',
+            src: src,
+            position: 'absolute',
+            visibility: 'hidden',
+            append: object.container
+          })
+        }
+        console.log(`%c${name.toUpperCase()}`, 'color: #FC1F49')
+      }
+    }
+  })
+}
+
+// =============================================================================
+// MARK: EVENT
+// =============================================================================
 const eventHandler = (event: string) => (handleEvent: EventListener, elem: Elem, bubble?: boolean) => {
   elem.addEventListener(event, handleEvent, bubble)
 }
@@ -316,7 +474,9 @@ const tstart = eventHandler('touchstart')
 const tmove = eventHandler('touchmove')
 const tend = eventHandler('touchend')
 
-//HELPERS ===============================================================================================================
+// =============================================================================
+// MARK: HELPERS
+// =============================================================================
 const debugo = (obj: {}): string => {
   let response: string = ''
   for (const key of Object.keys(obj)) {
@@ -334,12 +494,13 @@ const debugo = (obj: {}): string => {
     }
     response += key + ' => ' + kobj + '\n'
   }
-  console.log(`%c ${response}`, 'color: yellow')
+  console.log(`%c ${response}`, 'color: #FC1F49')
   return response
 }
 
-//CreateElem COMPIL ===============================================================================================================
-
+// =============================================================================
+// MARK:CreateElem COMPIL
+// =============================================================================
 function CreateElem(opt: OptionElement): void {
   this.opt = opt;
   this.i
@@ -388,63 +549,9 @@ CreateElem.prototype = {
   }
 }
 
-const videoToCanvas = (src: SrcType, container: Elem, w: number, h: number) => {
-  const video = document.createElement('video')
-  video.id = 'video'
-  video.classList.add('video')
-  video.style.position = 'absolute'
-  // video.style.opacity= '0'
-  video.preload = 'auto'
-  video.autoplay = true
-  video.defaultMuted = true
-  video.muted = true
-  let webKitPlayInline = document.createAttribute('webkit-playsinline')
-  video.setAttribute('crossorigin', 'anonymous')
-  video.setAttributeNode(webKitPlayInline)
-  let att = document.createAttribute("playsinline")
-  video.setAttributeNode(att)
-  container.appendChild(video)
-
-  const s = new CreateElem({
-    name: 'source',
-    tag: 'source',
-    src: src.url,
-    type: 'video/mp4',
-    append: video
-  })
-
-  const c = document.createElement('canvas')
-  c.id= 'canvas'
-  new CreateElem({
-    name: 'canvas',
-    tag: 'canvas',
-    position: 'absolute',
-    height: '100',
-    style: {
-      top: '0px'
-    },
-    left: (w - ((src.width * h) / src.height)) / 2,
-    append: container
-  })
-
-  video.addEventListener('play', function draw(video, context, cw, ch) {
-    // displayNone(select('startelem'))
-    const canvas = c.i
-    var context = canvas.getContext('2d');
-    var cw = (src.width * h) / src.height;
-    var ch = h;
-    // canvasW = cw;
-    canvas.width = cw;
-    canvas.height = ch;
-    // if (!started) G.setLeft((w - ((src.width * h) / src.height)) / 2, canvas)
-    // if (video.ended) return false;
-    // started = true
-    context.drawImage(video, 0, 0, cw, ch);
-    setTimeout(draw, 20, video, context, cw, ch);
-
-  })
-}
-
+// =============================================================================
+// EXPORTS
+// =============================================================================
 module.exports = {
   createNewCreative,
   px,
@@ -459,6 +566,7 @@ module.exports = {
   selectClass,
   selectTag,
   S,
+  have,
   create,
   setElem,
   appendToDom,
@@ -499,5 +607,5 @@ module.exports = {
   click,
   debugo,
   CreateElem,
-  videoToCanvas
+  VideoOnCanvas,
 }
