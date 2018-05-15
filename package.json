@@ -2,7 +2,7 @@
   "name": "ison-js",
   "version": "1.0.7",
   "description": "ison function JS",
-  "main": "ison.js",
+  "main": "dist/ison.js",
   "scripts": {
     "build": "webpack --mode production --watch",
     "test": "jest --watch",

@@ -569,7 +569,7 @@ CreateElem.prototype = {
 // EXPORTS
 // =============================================================================
 
-module.exports = {
+export {
   createNewCreative,
   px,
   getInt,
@@ -594,7 +594,6 @@ module.exports = {
   display,
   displayNone,
   displayFlex,
-  displayBlock,
   displayBlock,
   setPos,
   setFix,
