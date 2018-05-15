@@ -1,8 +1,8 @@
 {
   "name": "ison-js",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "ison function JS",
-  "main": "ison.js",
+  "main": "dist/ison.js",
   "scripts": {
     "build": "webpack --mode production --watch",
     "test": "jest --watch",
@@ -11,7 +11,7 @@
   "keywords": [
     "ison mobile js"
   ],
-  "author": "@EDBZ",
+  "author": "EDBZ",
   "license": "ISC",
   "dependencies": {
     "data.maybe": "^1.2.2"
