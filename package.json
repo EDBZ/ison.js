@@ -1,8 +1,8 @@
 {
   "name": "ison-js",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "ison function JS",
-  "main": "dist/ison.js",
+  "main": "ison.js",
   "scripts": {
     "build": "webpack --mode production --watch",
     "test": "jest --watch",
@@ -13,9 +13,7 @@
   ],
   "author": "EDBZ",
   "license": "ISC",
-  "dependencies": {
-    "data.maybe": "^1.2.2"
-  },
+  "dependencies": {},
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-jest": "^22.4.3",
