@@ -1,6 +1,6 @@
 {
   "name": "ison-js",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "ison function JS",
   "main": "ison.js",
   "scripts": {
