@@ -7,7 +7,7 @@ const fs = require('fs');
 module.exports = {  
   entry: {ison:'./src/ison.js', sandbox: './src/sandbox.js'},
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, './'),
     filename: '[name].js',
   },
   module: {
