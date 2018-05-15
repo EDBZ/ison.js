@@ -37,7 +37,7 @@ type OptionElement = {
   style?: {...CSSStyleDeclaration }
 }
 
-type Size = { w: number, h: number }
+type Size = { width: number, height: number }
 
 type SrcType = {
   url: string,
@@ -46,11 +46,9 @@ type SrcType = {
   type: string
 }
 
-
 // =============================================================================
 // MARK: createNewCreative
 // =============================================================================
-
 const createNewCreative = (format: string, cb: Function) => {
   return new Promise((resolve, reject) => {
     let win = window
@@ -83,8 +81,14 @@ const createNewCreative = (format: string, cb: Function) => {
       favicon.setAttribute('type', 'image/x-icon')
       favicon.setAttribute('href', 'https://s3-eu-west-1.amazonaws.com/static.tabmo.io/Auto/utilsFormats/assets/favicon.ico')
       if (head) appendToDom(head, meta, favicon, title)
-      computeSize()
-        .then(r => {
+      
+      computeSize().then(r => {
+      if(window.creative === undefined){
+        window.creative ={size: r}
+
+      }else{
+        window.creative.size = r
+      }
           cb()
         })
         .catch(er => {
@@ -98,7 +102,6 @@ const createNewCreative = (format: string, cb: Function) => {
 // MARK: string replace 
 // =============================================================================
 
-
 const px: string = 'px';
 
 const getInt = (elem: string): number => parseInt(elem.replace(px, ''), 10);
@@ -108,7 +111,6 @@ const getInt = (elem: string): number => parseInt(elem.replace(px, ''), 10);
 // =============================================================================
 
 const amMraid = (): boolean => window.mraid !== undefined
-
 
 // =============================================================================
 // MARK: Mobile check
@@ -133,14 +135,21 @@ async function getSize(elem: HTMLElement | HTMLBodyElement): Promise<Size> {
         if (elem.offsetHeight !== 0) {
           clearInterval(interval)
           if (elem instanceof HTMLBodyElement) {
-            resolve(window.creativeSize = { w: elem.offsetWidth, h: elem.offsetHeight })
+            resolve({ width: elem.offsetWidth, height: elem.offsetHeight })
           } else {
-            resolve({ w: elem.offsetWidth, h: elem.offsetHeight })
+            resolve({ width: elem.offsetWidth, height: elem.offsetHeight })
           }
         }
       } else {
-        clearInterval(interval)
-        reject("ERROR : I can't compute Creative Size")
+        const styleH = window.getComputedStyle(elem, null).getPropertyValue('height')
+        const styleW = window.getComputedStyle(elem, null).getPropertyValue('width')
+        if (getInt(styleH) !== undefined && getInt(styleH) !== 0) {
+          clearInterval(interval)
+          resolve({ width: getInt(styleW), height: getInt(styleH) })
+        } else {
+          clearInterval(interval)
+          reject("ERROR : I can't compute Creative Size")
+        }
       }
     }, 10)
   })
@@ -148,7 +157,7 @@ async function getSize(elem: HTMLElement | HTMLBodyElement): Promise<Size> {
 
 async function computeSize(): Promise<Size | void> {
   return new Promise((resolve, reject) => {
-    if (document.body != null) getSize(document.body).then(r => resolve(window.creativeSize))
+    if (document.body != null) getSize(document.body).then(r => resolve(r))
   })
 }
 
@@ -174,11 +183,12 @@ const S = (selector: string): HTMLCollection<Elem> | null | Elem => {
   }
 }
 
-const have = (elem: any):boolean => elem !== undefined
+const have = (elem: any): boolean => elem !== undefined
 
 // =============================================================================
 // MARK: CREATORS
 // =============================================================================
+
 const create = (tag: string): Elem => document.createElement(tag);
 
 const setElem = (name: string, tag: string, index?: number): Elem => {
@@ -210,7 +220,6 @@ const addClass = classe('add')
 const remClass = classe('remove')
 const toggleClass = classe('toggle')
 
-
 const appendToDom = (container: Elem | 'body', ...elem: Elem[]): void => {
   elem.map(e => {
     switch (typeof container) {
@@ -231,6 +240,7 @@ const appendToDom = (container: Elem | 'body', ...elem: Elem[]): void => {
 // =============================================================================
 // MARK: CSS MANIP
 // =============================================================================
+
 const innerTxt = (text: string, ...elem: Elem[]): string[] => elem.map(e => e.innerHTML = text)
 
 const opacity = (lvl: number) => (...elem: Elem[]): string[] => elem.map(e => e.style.opacity = lvl.toString())
@@ -332,6 +342,7 @@ const setLeft = setDim('left')
 // =============================================================================
 // MARK: VIDEO to CANVAS
 // =============================================================================
+
 function VideoOnCanvas(src: SrcType | string, container: Elem, size: Size) {
   this.src = src
   this.container = container
@@ -376,16 +387,16 @@ VideoOnCanvas.prototype = {
     if (typeof this.src == 'string') {
       this.video.addEventListener('loadedmetadata', () => {
         getSize(this.video).then(r => {
-          this.canvas.width = (r.w * this.size.h) / r.h;
-          this.canvas.height = this.size.h
-          this.canvas.style.left = (this.size.w - ((r.w * this.size.h) / r.h)) / 2 + 'px'
+          this.canvas.width = (r.width * this.size.height) / r.height;
+          this.canvas.height = this.size.height
+          this.canvas.style.left = (this.size.width - ((r.width * this.size.height) / r.height)) / 2 + 'px'
           this.container.appendChild(this.canvas)
         })
       })
     } else {
-      this.canvas.width = (this.src.width * this.size.h) / this.src.height;
-      this.canvas.height = this.size.h
-      this.canvas.style.left = (this.size.w - ((this.src.width * this.size.h) / this.src.height)) / 2 + 'px'
+      this.canvas.width = (this.src.width * this.size.height) / this.src.height;
+      this.canvas.height = this.size.height
+      this.canvas.style.left = (this.size.width - ((this.src.width * this.size.height) / this.src.height)) / 2 + 'px'
       this.container.appendChild(this.canvas)
     }
     return this
@@ -397,7 +408,6 @@ VideoOnCanvas.prototype = {
   firstQuartile: function (tracker: string) {
     makeTracker(this, 'firstQuartile', 0.25, tracker)
     return this
-
   },
   midPoint: function (tracker: string) {
     makeTracker(this, 'midPoint', 0.5, tracker)
@@ -435,18 +445,18 @@ const makeTracker = (object: { video: HTMLVideoElement, container: Elem }, name:
   object.video.addEventListener('timeupdate', function (e) {
     if (e.target instanceof HTMLVideoElement) {
       if (e.target.currentTime >= e.target.duration * time && elem === undefined) {
-        if(clickable) {
+        if (clickable) {
           elem = new CreateElem({
             name: name,
             tag: 'a',
             href: src,
-            width: window.creativeSize.w,
-            height: window.creativeSize.h,
+            width: window.creative.size.width,
+            height: window.creative.size.height,
             position: 'absolute',
             zIndex: 5000,
             append: object.container
           })
-        }else {
+        } else {
           elem = new CreateElem({
             name: name,
             tag: 'img',
@@ -465,6 +475,7 @@ const makeTracker = (object: { video: HTMLVideoElement, container: Elem }, name:
 // =============================================================================
 // MARK: EVENT
 // =============================================================================
+
 const eventHandler = (event: string) => (handleEvent: EventListener, elem: Elem, bubble?: boolean) => {
   elem.addEventListener(event, handleEvent, bubble)
 }
@@ -477,6 +488,7 @@ const tend = eventHandler('touchend')
 // =============================================================================
 // MARK: HELPERS
 // =============================================================================
+
 const debugo = (obj: {}): string => {
   let response: string = ''
   for (const key of Object.keys(obj)) {
@@ -501,6 +513,7 @@ const debugo = (obj: {}): string => {
 // =============================================================================
 // MARK:CreateElem COMPIL
 // =============================================================================
+
 function CreateElem(opt: OptionElement): void {
   this.opt = opt;
   this.i
@@ -540,18 +553,22 @@ CreateElem.prototype = {
     if (this.opt.tmove) tmove(this.opt.tmove, this.i)
     if (this.opt.tend) tend(this.opt.tend, this.i)
     if (this.opt.click) click(this.opt.click, this.i)
+    return this
   },
   info: function () {
     debugo(this.opt)
+    return this
   },
   _event: function (e: string, fn: Function) {
     eventHandler(e)(fn, this.i)
+    return this
   }
 }
 
 // =============================================================================
 // EXPORTS
 // =============================================================================
+
 module.exports = {
   createNewCreative,
   px,
