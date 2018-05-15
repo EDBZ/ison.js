@@ -1,6 +1,6 @@
 {
   "name": "ison-js",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "ison function JS",
   "main": "dist/ison.js",
   "scripts": {
