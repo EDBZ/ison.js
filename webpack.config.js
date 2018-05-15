@@ -1,43 +1,51 @@
-const path = require('path');  
+const path = require('path');
 const webpack = require('webpack');
 const FlowBabelWebpackPlugin = require('flow-babel-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const fs = require('fs');
 
-module.exports = {  
-  entry: {ison:'./src/ison.js', sandbox: './src/sandbox.js'},
+module.exports = {
+  entry: './src/ison.js',
   output: {
-    path: path.resolve(__dirname, './'),
-    filename: '[name].js',
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'ison.js',
+    library: 'ison-js',
+    libraryTarget: "umd",
+    auxiliaryComment: {
+      root: "Root Comment",
+      commonjs: "CommonJS Comment",
+      commonjs2: "CommonJS2 Comment",
+      amd: "AMD Comment"
+    }
   },
+  // optimization: {
+  //   minimize: true,
+  //   minimizer: [
+  //     new UglifyJsPlugin({
+  //       uglifyOptions: {
+  //         // sourceMap: true,
+  //         ecma: 6
+  //       }
+  //     })
+  //   ]
+  // },
   module: {
-    rules: [
-      {
-        test: /\.(js)$/,
-        exclude: /node_modules/,
-        use: {
-          loader: "babel-loader"
-        }      
-      },
-      // {
-      //   test: /\.html$/,
-      //   use: [
-      //     {
-      //       loader: "html-loader",
-      //       options: { minimize: true }
-      //     }
-      //   ]
-      // }
-    ]
+    rules: [{
+      test: /\.(js)$/,
+      exclude: /node_modules/,
+      use: {
+        loader: "babel-loader"
+      }
+    }, ]
   },
   plugins: [
     new FlowBabelWebpackPlugin(),
-    // new HtmlWebpackPlugin({
-    //   filename: `index.html`,
-    //   template: './index.html',
-    //   inject: 'head',
-    //   showErrors: false
-    // }),
-
+    // new UglifyJsPlugin({
+    //   sourceMap: true,
+    //   uglifyOptions: {
+    //     ecma: 6,
+    //   }
+    // })
   ],
 }
