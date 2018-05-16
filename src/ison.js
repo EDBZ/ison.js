@@ -587,11 +587,7 @@ CreateElem.prototype = {
     if (this.opt.append) appendToDom(this.opt.append, this.i)
     if (this.opt.class) addClass(this.opt.class, this.i)
     if (this.opt.style) {
-      const keys: string[] = Object.keys(this.opt.style)
-      const values: mixed[] = Object.values(this.opt.style)
-      keys.forEach((k, i) => {
-        if (typeof values[i] === 'string') this.i.style.setProperty(k, values[i])
-      })
+      css(this.i, this.opt.style)
     }
     if (this.opt.src) this.i.src = this.opt.src
     if (this.opt.href) this.i.href = this.opt.href
