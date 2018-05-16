@@ -371,12 +371,16 @@ const setLeft = setDim('left')
 //TODO: styles function
 
 
-const css = (selector:string, styleString: string) => {
+const css = (selector:any, styles:{}) => {
   const sheet = window.creative.sheet
-  const style = document.getElementById('creativeStyle')
-  const rule = `${selector} { ${styleString} }`;
-  const index = sheet.cssRules.length; // insert at the end
-  sheet.insertRule(rule, index);
+  const index = sheet.cssRules.length
+  for (const key in styles) {
+    if (styles.hasOwnProperty(key)) {
+      const style = styles[key];
+      selector.style[key] = style
+      
+    }
+  }
 }
 
 // =============================================================================
@@ -606,8 +610,8 @@ CreateElem.prototype = {
     eventHandler(e)(fn, this.i)
     return this
   },
-  _style: function (styles: string) {
-    css(`#${this.opt.name}`, styles)
+  _style: function (styles: {}) {
+    css(this.i, styles)
     return this
   }
 }
