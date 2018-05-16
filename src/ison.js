@@ -586,14 +586,20 @@ CreateElem.prototype = {
     eventHandler(e)(fn, this.i)
     return this
   },
-  _style: function (styles: CSSStyleDeclaration) {
+  _style: function (styles: {}) {
+    const keys = Object.keys(styles)
+    console.log('keys: ', keys);
+      const values: mixed[] = Object.values(styles)
+      console.log('values: ', values);
+      keys.forEach((k, i) => {
+        if (typeof values[i] === 'string') this.i.style.setProperty(k, values[i])
+      })
     console.log('styles: ', styles);
-    console.log(styles instanceof CSSStyleDeclaration);
-    for (let index = 0; index < styles.length; index++) {
-      const style = styles[index];
-      console.log('index: ', index);
-      console.log('style: ', style);
-    }
+    // for (let index = 0; index < styles.length; index++) {
+    //   const style = styles[index];
+    //   console.log('index: ', index);
+    //   console.log('style: ', style);
+    // }
     return this
   }
 }
