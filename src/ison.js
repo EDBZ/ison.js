@@ -371,7 +371,7 @@ const setLeft = setDim('left')
 //TODO: styles function
 
 
-const css = (selector, styleString) => {
+const css = (selector:string, styleString: string) => {
   const sheet = window.creative.sheet
   const style = document.getElementById('creativeStyle')
   const rule = `${selector} { ${styleString} }`;
@@ -606,20 +606,8 @@ CreateElem.prototype = {
     eventHandler(e)(fn, this.i)
     return this
   },
-  _style: function (styles: {}) {
-    const keys = Object.keys(styles)
-    console.log('keys: ', keys);
-    const values: mixed[] = Object.values(styles)
-    console.log('values: ', values);
-    keys.forEach((k, i) => {
-      if (typeof values[i] === 'string') this.i.style[k] = values[i]
-    })
-    console.log('styles: ', styles);
-    // for (let index = 0; index < styles.length; index++) {
-    //   const style = styles[index];
-    //   console.log('index: ', index);
-    //   console.log('style: ', style);
-    // }
+  _style: function (styles: string) {
+    css(`#${this.opt.name}`, styles)
     return this
   }
 }
