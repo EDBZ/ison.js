@@ -89,8 +89,19 @@ const createNewCreative = (format: string, cb: Function) => {
       favicon.setAttribute('rel', 'icon')
       favicon.setAttribute('type', 'image/x-icon')
       favicon.setAttribute('href', 'https://s3-eu-west-1.amazonaws.com/static.tabmo.io/Auto/utilsFormats/assets/favicon.ico')
-      if (head) appendToDom(head, meta, favicon, title)
-
+      if (head) {
+        appendToDom(head, meta, favicon, title)
+        const sheet = head.appendChild(
+          document.createElement('style')
+        ).sheet
+        if (window.creative === undefined) {
+          window.creative = {
+            sheet
+          }
+        } else {
+          window.creative.sheet = sheet
+        }
+      }
       computeSize().then(r => {
           if (window.creative === undefined) {
             window.creative = {
@@ -359,6 +370,15 @@ const setLeft = setDim('left')
 
 //TODO: styles function
 
+
+const css = (selector, styleString) => {
+  const sheet = window.creative.sheet
+  const style = document.getElementById('creativeStyle')
+  const rule = `${selector} { ${styleString} }`;
+  const index = sheet.cssRules.length; // insert at the end
+  sheet.insertRule(rule, index);
+}
+
 // =============================================================================
 // MARK: VIDEO to CANVAS
 // =============================================================================
@@ -589,11 +609,11 @@ CreateElem.prototype = {
   _style: function (styles: {}) {
     const keys = Object.keys(styles)
     console.log('keys: ', keys);
-      const values: mixed[] = Object.values(styles)
-      console.log('values: ', values);
-      keys.forEach((k, i) => {
-        if (typeof values[i] === 'string') this.i.style[k] = values[i]
-      })
+    const values: mixed[] = Object.values(styles)
+    console.log('values: ', values);
+    keys.forEach((k, i) => {
+      if (typeof values[i] === 'string') this.i.style[k] = values[i]
+    })
     console.log('styles: ', styles);
     // for (let index = 0; index < styles.length; index++) {
     //   const style = styles[index];
