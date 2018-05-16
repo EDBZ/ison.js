@@ -563,8 +563,14 @@ CreateElem.prototype = {
     eventHandler(e)(fn, this.i)
     return this
   },
-  style: function (style: CSSStyleDeclaration){
-    this.i.style.cssText= style
+  _style: function (styles: CSSStyleDeclaration){
+for (let index = 0; index < styles.length; index++) {
+  const style = styles[index];
+  console.log('index: ', index);
+  console.log('style: ', style);
+  
+}
+    // this.i.style.cssText= style
     return this
   }
 }
