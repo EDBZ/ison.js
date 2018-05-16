@@ -562,6 +562,10 @@ CreateElem.prototype = {
   _event: function (e: string, fn: Function) {
     eventHandler(e)(fn, this.i)
     return this
+  },
+  style: function (style: CSSStyleDeclaration){
+    this.i.style.cssText= style
+    return this
   }
 }
 
