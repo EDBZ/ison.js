@@ -592,7 +592,7 @@ CreateElem.prototype = {
       const values: mixed[] = Object.values(styles)
       console.log('values: ', values);
       keys.forEach((k, i) => {
-        if (typeof values[i] === 'string') this.i.style.setProperty(k, values[i])
+        if (typeof values[i] === 'string') this.i.style[k] = values[i]
       })
     console.log('styles: ', styles);
     // for (let index = 0; index < styles.length; index++) {
