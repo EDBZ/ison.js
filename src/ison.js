@@ -4,40 +4,48 @@
 // MARK: TYPE
 // =============================================================================
 
-type Elem = HTMLElement & { src?: string, type?: string, href?: string }
+type Elem = HTMLElement & {
+  src ? : string,
+  type ? : string,
+  href ? : string
+}
 
 type OptionElement = {
   name: string,
   tag: string,
-  index?: number,
-  display?: string,
-  position?: string,
-  width?: string | number,
-  height?: string | number,
-  top?: string | number,
-  bottom?: string | number,
-  right?: string | number,
-  left?: string | number,
-  opacity?: number,
-  zIndex?: number,
-  bkgColor?: string,
-  innerTxt?: string,
-  margin?: number,
-  padding?: number,
-  append?: Elem | 'body',
-  class?: string,
-  src?: string,
-  href?: string,
-  type?: string,
-  event?: Function,
-  tstart?: Function,
-  tmove?: Function,
-  tend?: Function,
-  click?: Function,
-  style?: {...CSSStyleDeclaration }
+  index ? : number,
+  display ? : string,
+  position ? : string,
+  width ? : string | number,
+  height ? : string | number,
+  top ? : string | number,
+  bottom ? : string | number,
+  right ? : string | number,
+  left ? : string | number,
+  opacity ? : number,
+  zIndex ? : number,
+  bkgColor ? : string,
+  innerTxt ? : string,
+  margin ? : number,
+  padding ? : number,
+  append ? : Elem | 'body',
+  class ? : string,
+  src ? : string,
+  href ? : string,
+  type ? : string,
+  event ? : Function,
+  tstart ? : Function,
+  tmove ? : Function,
+  tend ? : Function,
+  click ? : Function,
+  style ? : { ...CSSStyleDeclaration
+  }
 }
 
-type Size = { width: number, height: number }
+type Size = {
+  width: number,
+  height: number
+}
 
 type SrcType = {
   url: string,
@@ -62,6 +70,7 @@ const createNewCreative = (format: string, cb: Function) => {
         windowLoad();
       }
     }
+
     function windowLoad() {
       const mainBody = doc.body;
       const head = doc.head
@@ -81,14 +90,16 @@ const createNewCreative = (format: string, cb: Function) => {
       favicon.setAttribute('type', 'image/x-icon')
       favicon.setAttribute('href', 'https://s3-eu-west-1.amazonaws.com/static.tabmo.io/Auto/utilsFormats/assets/favicon.ico')
       if (head) appendToDom(head, meta, favicon, title)
-      
-      computeSize().then(r => {
-      if(window.creative === undefined){
-        window.creative ={size: r}
 
-      }else{
-        window.creative.size = r
-      }
+      computeSize().then(r => {
+          if (window.creative === undefined) {
+            window.creative = {
+              size: r
+            }
+
+          } else {
+            window.creative.size = r
+          }
           cb()
         })
         .catch(er => {
@@ -126,7 +137,7 @@ const formatPortrait = (): boolean => window.orientation == 0
 // MARK: Size
 // =============================================================================
 
-async function getSize(elem: HTMLElement | HTMLBodyElement): Promise<Size> {
+async function getSize(elem: HTMLElement | HTMLBodyElement): Promise < Size > {
   return new Promise((resolve, reject) => {
     let i = 0
     const interval = setInterval(() => {
@@ -135,9 +146,15 @@ async function getSize(elem: HTMLElement | HTMLBodyElement): Promise<Size> {
         if (elem.offsetHeight !== 0) {
           clearInterval(interval)
           if (elem instanceof HTMLBodyElement) {
-            resolve({ width: elem.offsetWidth, height: elem.offsetHeight })
+            resolve({
+              width: elem.offsetWidth,
+              height: elem.offsetHeight
+            })
           } else {
-            resolve({ width: elem.offsetWidth, height: elem.offsetHeight })
+            resolve({
+              width: elem.offsetWidth,
+              height: elem.offsetHeight
+            })
           }
         }
       } else {
@@ -145,7 +162,10 @@ async function getSize(elem: HTMLElement | HTMLBodyElement): Promise<Size> {
         const styleW = window.getComputedStyle(elem, null).getPropertyValue('width')
         if (getInt(styleH) !== undefined && getInt(styleH) !== 0) {
           clearInterval(interval)
-          resolve({ width: getInt(styleW), height: getInt(styleH) })
+          resolve({
+            width: getInt(styleW),
+            height: getInt(styleH)
+          })
         } else {
           clearInterval(interval)
           reject("ERROR : I can't compute Creative Size")
@@ -155,7 +175,7 @@ async function getSize(elem: HTMLElement | HTMLBodyElement): Promise<Size> {
   })
 }
 
-async function computeSize(): Promise<Size | void> {
+async function computeSize(): Promise < Size | void > {
   return new Promise((resolve, reject) => {
     if (document.body != null) getSize(document.body).then(r => resolve(r))
   })
@@ -167,11 +187,11 @@ async function computeSize(): Promise<Size | void> {
 
 const select = (id: string): Elem | null => document.getElementById(id)
 
-const selectClass = (className: string): HTMLCollection<Elem> | null => document.getElementsByClassName(className)
+const selectClass = (className: string): HTMLCollection < Elem > | null => document.getElementsByClassName(className)
 
-const selectTag = (tag: string): HTMLCollection<Elem> | null => document.getElementsByTagName(tag)
+const selectTag = (tag: string): HTMLCollection < Elem > | null => document.getElementsByTagName(tag)
 
-const S = (selector: string): HTMLCollection<Elem> | null | Elem => {
+const S = (selector: string): HTMLCollection < Elem > | null | Elem => {
   const first = selector.charAt(0)
   switch (first) {
     case '.':
@@ -191,7 +211,7 @@ const have = (elem: any): boolean => elem !== undefined
 
 const create = (tag: string): Elem => document.createElement(tag);
 
-const setElem = (name: string, tag: string, index?: number): Elem => {
+const setElem = (name: string, tag: string, index ? : number): Elem => {
   const elem = create(tag)
   elem.id = index ? `${name}${index}` : name
   elem.className = index ? `${index} ${name}` : name
@@ -297,11 +317,11 @@ const setTransition = (prop: string, duration: number, ease: string, ...elem: El
 
 const setDim = (dim: string) => (x: string | number, ...elem: Elem[]): void => {
   const vwvh: RegExp = /vw|vh/gi
-  const result: string = typeof x === 'string'
-    ? vwvh.test(x)
-      ? `${x}`
-      : `${x}%`
-    : `${x}px`
+  const result: string = typeof x === 'string' ?
+    vwvh.test(x) ?
+    `${x}` :
+    `${x}%` :
+    `${x}px`
   elem.map(e => {
     switch (dim) {
       case 'width':
@@ -440,7 +460,10 @@ const draw = (video: HTMLVideoElement, canvas: HTMLCanvasElement) => {
   requestAnimationFrame(() => draw(video, canvas))
 }
 
-const makeTracker = (object: { video: HTMLVideoElement, container: Elem }, name: string, time: number, src: string, clickable?: boolean = false) => {
+const makeTracker = (object: {
+  video: HTMLVideoElement,
+  container: Elem
+}, name: string, time: number, src: string, clickable ? : boolean = false) => {
   var elem
   object.video.addEventListener('timeupdate', function (e) {
     if (e.target instanceof HTMLVideoElement) {
@@ -476,7 +499,7 @@ const makeTracker = (object: { video: HTMLVideoElement, container: Elem }, name:
 // MARK: EVENT
 // =============================================================================
 
-const eventHandler = (event: string) => (handleEvent: EventListener, elem: Elem, bubble?: boolean) => {
+const eventHandler = (event: string) => (handleEvent: EventListener, elem: Elem, bubble ? : boolean) => {
   elem.addEventListener(event, handleEvent, bubble)
 }
 
@@ -563,14 +586,14 @@ CreateElem.prototype = {
     eventHandler(e)(fn, this.i)
     return this
   },
-  _style: function (styles: CSSStyleDeclaration){
-for (let index = 0; index < styles.length; index++) {
-  const style = styles[index];
-  console.log('index: ', index);
-  console.log('style: ', style);
-  
-}
-    // this.i.style.cssText= style
+  _style: function (styles: CSSStyleDeclaration) {
+    console.log('styles: ', styles);
+    console.log(styles instanceof CSSStyleDeclaration);
+    for (let index = 0; index < styles.length; index++) {
+      const style = styles[index];
+      console.log('index: ', index);
+      console.log('style: ', style);
+    }
     return this
   }
 }
