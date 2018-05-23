@@ -54,6 +54,15 @@ type SrcType = {
   type: string
 }
 
+type CanvasPlacement = {
+  width: number,
+  height: number,
+  left: number,
+  top: number
+}
+
+type OptionResize = 'crop' | 'stretch' | 'contain'
+
 // =============================================================================
 // MARK: createNewCreative
 // =============================================================================
@@ -371,14 +380,14 @@ const setLeft = setDim('left')
 //TODO: styles function
 
 
-const css = (selector:any, styles:{}) => {
+const css = (selector: any, styles: {}) => {
   const sheet = window.creative.sheet
   const index = sheet.cssRules.length
   for (const key in styles) {
     if (styles.hasOwnProperty(key)) {
       const style = styles[key];
       selector.style[key] = style
-      
+
     }
   }
 }
@@ -387,11 +396,12 @@ const css = (selector:any, styles:{}) => {
 // MARK: VIDEO to CANVAS
 // =============================================================================
 
-function VideoOnCanvas(src: SrcType | string, container: Elem, size: Size, namePlus?: string) {
+function VideoOnCanvas(src: SrcType | string, container: Elem, size: Size, resize: OptionResize, namePlus ? : string) {
   this.src = src
   this.container = container
   this.size = size
   this.namePlus = namePlus
+  this.resize = resize
   this.builtVideo()
 }
 
@@ -432,16 +442,23 @@ VideoOnCanvas.prototype = {
     if (typeof this.src == 'string') {
       this.video.addEventListener('loadedmetadata', () => {
         getSize(this.video).then(r => {
-          this.canvas.width = (r.width * this.size.height) / r.height;
-          this.canvas.height = this.size.height
-          this.canvas.style.left = (this.size.width - ((r.width * this.size.height) / r.height)) / 2 + 'px'
+          const canvasPlacement = resizeFromOtion(this.resize, r, this.size)
+          this.canvas.width = canvasPlacement.width
+          this.canvas.height = canvasPlacement.height
+          this.canvas.style.left = canvasPlacement.left + 'px'
+          this.canvas.style.top = canvasPlacement.top + 'px'
           this.container.appendChild(this.canvas)
         })
       })
     } else {
-      this.canvas.width = (this.src.width * this.size.height) / this.src.height;
-      this.canvas.height = this.size.height
-      this.canvas.style.left = (this.size.width - ((this.src.width * this.size.height) / this.src.height)) / 2 + 'px'
+      const canvasPlacement = resizeFromOtion(this.resize, {
+        width: this.src.width,
+        height: this.src.height
+      }, this.size)
+      this.canvas.width = canvasPlacement.width
+      this.canvas.height = canvasPlacement.height
+      this.canvas.style.left = canvasPlacement.left + 'px'
+      this.canvas.style.top = canvasPlacement.top + 'px'
       this.container.appendChild(this.canvas)
     }
     return this
@@ -518,6 +535,51 @@ const makeTracker = (object: {
       }
     }
   })
+}
+
+const resizeFromOtion = (resize: OptionResize, videoSize: Size, mainSize: Size): CanvasPlacement => {
+  const ratioVideo = videoSize.height / videoSize.width
+  const ratioWrapper = mainSize.height / mainSize.width
+  switch (resize) {
+    case 'stretch':
+      return {
+        width: mainSize.width,
+        height: mainSize.height,
+        left: 0,
+        top: 0
+      }
+    case 'crop':
+      return (ratioVideo <= ratioWrapper ? {
+        width: (videoSize.width * mainSize.height) / videoSize.height,
+        height: mainSize.height,
+        left: (((videoSize.width * mainSize.height) / videoSize.height) - mainSize.width) / 2,
+        top: 0
+      } : {
+        width: mainSize.width,
+        height: (videoSize.height * mainSize.width) / videoSize.width,
+        left: 0,
+        top: (((videoSize.height * mainSize.width) / videoSize.width) - mainSize.height) / 2
+      })
+    case 'contain':
+      return (ratioVideo >= ratioWrapper ? {
+        width: (videoSize.width * mainSize.height) / videoSize.height,
+        height: mainSize.height,
+        left: (((videoSize.width * mainSize.height) / videoSize.height) - mainSize.width) / 2,
+        top: 0
+      } : {
+        width: mainSize.width,
+        height: (videoSize.height * mainSize.width) / videoSize.width,
+        left: 0,
+        top: (((videoSize.height * mainSize.width) / videoSize.width) - mainSize.height) / 2
+      })
+    default:
+      return {
+        width: mainSize.width,
+        height: mainSize.height,
+        left: 0,
+        top: 0
+      }
+  }
 }
 
 // =============================================================================
