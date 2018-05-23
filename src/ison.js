@@ -676,6 +676,55 @@ CreateElem.prototype = {
     return this
   }
 }
+// =============================================================================
+// MENTIONS LEGALES
+// =============================================================================
+
+const haveLegalTerms = (wrapper: Elem, data: string, size: Size): void => {
+  if(typeof data === 'undefined') return
+  let  i = 0
+  const bkgmentions = new CreateElem({
+    name: 'bkgmentions',
+    tag: 'div',
+    height: 20,
+    width: '100',
+    position: 'absolute',
+    zIndex: 999999998,
+    top: size.height - 20,
+    bottom: 0,
+    style: {
+      backgroundColor: 'black'
+    },
+    append: wrapper
+  })
+
+  const mentions = new CreateElem({
+    name: 'mentions',
+    tag: 'div',
+    height: 20,
+    display: 'flex',
+    position: 'absolute',
+    zIndex: 999999999,
+    top: size.height - 20,
+    bottom: 0,
+    innerTxt: data,
+    style: {
+      fontFamily: 'sans-serif',
+      color: 'grey',
+      whiteSpace: 'nowrap',
+    },
+    append: wrapper
+  })
+
+  setInterval(() => {
+    mentions.style.left = -i + 'px'
+    i++
+    if (getInt(mentions.style.left) === -mentions.clientWidth) {
+      i = -size.width
+      mentions.style.left = -i + 'px'
+    }
+  }, 20)
+}
 
 // =============================================================================
 // EXPORTS
@@ -736,4 +785,5 @@ export {
   debugo,
   CreateElem,
   VideoOnCanvas,
+  haveLegalTerms
 }
