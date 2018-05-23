@@ -696,7 +696,7 @@ const haveLegalTerms = (wrapper: Elem, data: string, size: Size): void => {
       backgroundColor: 'black'
     },
     append: wrapper
-  })
+  }).i
 
   const mentions = new CreateElem({
     name: 'mentions',
@@ -714,7 +714,7 @@ const haveLegalTerms = (wrapper: Elem, data: string, size: Size): void => {
       whiteSpace: 'nowrap',
     },
     append: wrapper
-  })
+  }).i
 
   setInterval(() => {
     mentions.style.left = -i + 'px'
