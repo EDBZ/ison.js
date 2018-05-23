@@ -408,7 +408,7 @@ function VideoOnCanvas(src: SrcType | string, container: Elem, size: Size, resiz
 VideoOnCanvas.prototype = {
   builtVideo: function () {
     this.video = document.createElement('video')
-    this.video.id = `video${this.namePlus}`
+    this.video.id = this.namePlus ? `video${this.namePlus}` : 'video'
     this.video.classList.add('video')
     this.video.style.position = 'absolute'
     this.video.style.opacity = '0'
@@ -425,7 +425,7 @@ VideoOnCanvas.prototype = {
     this.video.setAttributeNode(att)
     this.container.appendChild(this.video)
     const s = new CreateElem({
-      name: `source${this.namePlus}`,
+      name: this.namePlus ?  `source${this.namePlus}` : 'source',
       tag: 'source',
       src: typeof this.src == 'string' ? this.src : this.src.url,
       type: 'video/mp4',
@@ -436,7 +436,7 @@ VideoOnCanvas.prototype = {
   },
   builtCanvas: function () {
     this.canvas = document.createElement('canvas')
-    this.canvas.id = `canvas${this.namePlus}`
+    this.canvas.id = this.namePlus ? `canvas${this.namePlus}` : 'canvas',
     this.canvas.classList.add('canvas')
     this.canvas.style.position = 'absolute'
     if (typeof this.src == 'string') {
