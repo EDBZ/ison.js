@@ -540,6 +540,7 @@ const makeTracker = (object: {
 const resizeFromOtion = (resize: OptionResize, videoSize: Size, mainSize: Size): CanvasPlacement => {
   const ratioVideo = videoSize.height / videoSize.width
   const ratioWrapper = mainSize.height / mainSize.width
+  //ratioVideo <= ratioWrapper ratio plus large que l'écran
   switch (resize) {
     case 'stretch':
       return {
@@ -552,26 +553,27 @@ const resizeFromOtion = (resize: OptionResize, videoSize: Size, mainSize: Size):
       return (ratioVideo <= ratioWrapper ? {
         width: (videoSize.width * mainSize.height) / videoSize.height,
         height: mainSize.height,
-        left: (((videoSize.width * mainSize.height) / videoSize.height) - mainSize.width) / 2,
+        left: (mainSize.width - ((videoSize.width * mainSize.height) / videoSize.height)) / 2,
         top: 0
       } : {
         width: mainSize.width,
         height: (videoSize.height * mainSize.width) / videoSize.width,
         left: 0,
-        top: (((videoSize.height * mainSize.width) / videoSize.width) - mainSize.height) / 2
+        top: (mainSize.height - ((videoSize.height * mainSize.width) / videoSize.width)) / 2
       })
     case 'contain':
-      return (ratioVideo >= ratioWrapper ? {
-        width: (videoSize.width * mainSize.height) / videoSize.height,
-        height: mainSize.height,
-        left: (((videoSize.width * mainSize.height) / videoSize.height) - mainSize.width) / 2,
-        top: 0
-      } : {
-        width: mainSize.width,
-        height: (videoSize.height * mainSize.width) / videoSize.width,
-        left: 0,
-        top: (((videoSize.height * mainSize.width) / videoSize.width) - mainSize.height) / 2
-      })
+      return (ratioVideo <= ratioWrapper ? {
+          width: mainSize.width,
+          height: (videoSize.height * mainSize.width) / videoSize.width,
+          left: 0,
+          top: (mainSize.height - ((videoSize.height * mainSize.width) / videoSize.width)) / 2
+        } :
+        {
+          width: (videoSize.width * mainSize.height) / videoSize.height,
+          height: mainSize.height,
+          left: (mainSize.width - ((videoSize.width * mainSize.height) / videoSize.height)) / 2,
+          top: 0
+        })
     default:
       return {
         width: mainSize.width,
