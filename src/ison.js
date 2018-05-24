@@ -425,7 +425,7 @@ VideoOnCanvas.prototype = {
     this.video.setAttributeNode(att)
     this.container.appendChild(this.video)
     const s = new CreateElem({
-      name: this.namePlus ?  `source${this.namePlus}` : 'source',
+      name: this.namePlus ? `source${this.namePlus}` : 'source',
       tag: 'source',
       src: typeof this.src == 'string' ? this.src : this.src.url,
       type: 'video/mp4',
@@ -437,8 +437,14 @@ VideoOnCanvas.prototype = {
   builtCanvas: function () {
     this.canvas = document.createElement('canvas')
     this.canvas.id = this.namePlus ? `canvas${this.namePlus}` : 'canvas',
-    this.canvas.classList.add('canvas')
+      this.canvas.classList.add('canvas')
     this.canvas.style.position = 'absolute'
+    if (this.resize !== 'stretch') {
+      this.canvasBkg = document.createElement('canvas')
+      this.canvasBkg.id = this.namePlus ? `canvasBkg${this.namePlus}` : 'canvasBkg',
+        this.canvasBkg.classList.add('canvasBkg')
+      this.canvasBkg.style.position = 'absolute'
+    }
     if (typeof this.src == 'string') {
       this.video.addEventListener('loadedmetadata', () => {
         getSize(this.video).then(r => {
@@ -448,6 +454,11 @@ VideoOnCanvas.prototype = {
           this.canvas.style.left = canvasPlacement.left + 'px'
           this.canvas.style.top = canvasPlacement.top + 'px'
           this.container.appendChild(this.canvas)
+          if (this.canvasBkg) {
+            this.canvasBkg.height = this.size.height
+            this.canvasBkg.width = this.size.width
+            this.container.appendChild(this.canvasBkg)
+          }
         })
       })
     } else {
@@ -460,6 +471,11 @@ VideoOnCanvas.prototype = {
       this.canvas.style.left = canvasPlacement.left + 'px'
       this.canvas.style.top = canvasPlacement.top + 'px'
       this.container.appendChild(this.canvas)
+      if (this.canvasBkg) {
+        this.canvasBkg.height = this.size.height
+        this.canvasBkg.width = this.size.width
+        this.container.appendChild(this.canvasBkg)
+      }
     }
     return this
   },
@@ -493,14 +509,29 @@ VideoOnCanvas.prototype = {
 const playCanvas = (elem: any) => {
   elem.video.addEventListener('play', () => {
     if (elem.video.paused || elem.video.ended) return;
-    draw(elem.video, elem.canvas)
+    if (elem.canvasBkg) {
+      draw(elem.video, elem.canvas, elem.canvasBkg)
+    } else {
+      draw(elem.video, elem.canvas)
+    }
   })
 }
 
-const draw = (video: HTMLVideoElement, canvas: HTMLCanvasElement) => {
-  let ctx = canvas.getContext('2d')
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-  requestAnimationFrame(() => draw(video, canvas))
+const draw = (video: HTMLVideoElement, canvas: HTMLCanvasElement, canvasBkg ? : HTMLCanvasElement) => {
+  if (canvasBkg) {
+    let ctx = canvas.getContext('2d')
+    let ctxBkg = canvasBkg.getContext('2d')
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    ctxBkg.drawImage(video, 0, 0, canvasBkg.width, canvasBkg.height)
+    // ctxBkg.filter= 'blur(3px)'
+    requestAnimationFrame(() => {
+      draw(video, canvas, canvasBkg)
+    })
+  } else {
+    let ctx = canvas.getContext('2d')
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    requestAnimationFrame(() => draw(video, canvas))
+  }
 }
 
 const makeTracker = (object: {
@@ -564,17 +595,16 @@ const resizeFromOtion = (resize: OptionResize, videoSize: Size, mainSize: Size):
       })
     case 'contain':
       return (ratioVideo <= ratioWrapper ? {
-          width: mainSize.width,
-          height: (videoSize.height * mainSize.width) / videoSize.width,
-          left: 0,
-          top: (mainSize.height - ((videoSize.height * mainSize.width) / videoSize.width)) / 2
-        } :
-        {
-          width: (videoSize.width * mainSize.height) / videoSize.height,
-          height: mainSize.height,
-          left: (mainSize.width - ((videoSize.width * mainSize.height) / videoSize.height)) / 2,
-          top: 0
-        })
+        width: mainSize.width,
+        height: (videoSize.height * mainSize.width) / videoSize.width,
+        left: 0,
+        top: (mainSize.height - ((videoSize.height * mainSize.width) / videoSize.width)) / 2
+      } : {
+        width: (videoSize.width * mainSize.height) / videoSize.height,
+        height: mainSize.height,
+        left: (mainSize.width - ((videoSize.width * mainSize.height) / videoSize.height)) / 2,
+        top: 0
+      })
     default:
       return {
         width: mainSize.width,
@@ -682,8 +712,8 @@ CreateElem.prototype = {
 // =============================================================================
 
 const haveLegalTerms = (wrapper: Elem, data: string, size: Size): void => {
-  if(typeof data === 'undefined') return
-  let  i = 0
+  if (typeof data === 'undefined') return
+  let i = 0
   const bkgmentions = new CreateElem({
     name: 'bkgmentions',
     tag: 'div',
