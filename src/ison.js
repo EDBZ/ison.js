@@ -465,6 +465,7 @@ VideoOnCanvas.prototype = {
   },
   play: function () {
     playCanvas(this)
+    this.video.play()
     return this
   },
   firstQuartile: function (tracker: string) {
