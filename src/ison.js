@@ -63,10 +63,32 @@ type CanvasPlacement = {
 
 type OptionResize = 'crop' | 'stretch' | 'contain'
 
+type OptVideoCanvas = {
+  resize: OptionResize,
+  namePlus ? : string,
+  backgroundCanvas ? : boolean
+}
+
+type OptionCreateCreative = {
+  callback: Function,
+  name: string,
+  orga ? : string,
+  favicon ? : string
+}
+declare class CanvasFilterBlur extends CanvasRenderingContext2D {
+  filter: string
+}
+
 // =============================================================================
 // MARK: createNewCreative
 // =============================================================================
-const createNewCreative = (format: string, cb: Function) => {
+const createNewCreative = (options: OptionCreateCreative) => {
+  const {
+    callback,
+    name,
+    orga,
+    favicon
+  } = options
   return new Promise((resolve, reject) => {
     let win = window
     let doc = document
@@ -93,34 +115,27 @@ const createNewCreative = (format: string, cb: Function) => {
       meta.setAttribute('content', 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=yes')
       meta.setAttribute('charset', 'utf-8')
       const title = create('title')
-      innerTxt(format + ' - Tabmo ©', title)
-      const favicon = create('link')
-      favicon.setAttribute('rel', 'icon')
-      favicon.setAttribute('type', 'image/x-icon')
-      favicon.setAttribute('href', 'https://s3-eu-west-1.amazonaws.com/static.tabmo.io/Auto/utilsFormats/assets/favicon.ico')
+      innerTxt(`${name}${orga?'_'+orga:''}`, title)
+      if (favicon) {
+        const favi = create('link')
+        favi.setAttribute('rel', 'icon')
+        favi.setAttribute('type', 'image/x-icon')
+        favi.setAttribute('href', favicon)
+        if (head) appendToDom(head, favi)
+      }
       if (head) {
-        appendToDom(head, meta, favicon, title)
-        const sheet = head.appendChild(
-          document.createElement('style')
-        ).sheet
-        if (window.creative === undefined) {
-          window.creative = {
-            sheet
-          }
-        } else {
-          window.creative.sheet = sheet
-        }
+        appendToDom(head, meta, title)
       }
       computeSize().then(r => {
+          console.log('r: ', r);
           if (window.creative === undefined) {
             window.creative = {
               size: r
             }
-
           } else {
             window.creative.size = r
           }
-          cb()
+          callback()
         })
         .catch(er => {
           console.error(er)
@@ -147,11 +162,11 @@ const amMraid = (): boolean => window.mraid !== undefined
 // MARK: Mobile check
 // =============================================================================
 
-const isIos = (): boolean => navigator.userAgent.includes('iPhone') && !navigator.userAgent.includes('Safari')
+const amIphone = (): boolean => navigator.userAgent.includes('iPhone') && !navigator.userAgent.includes('Safari')
 
-const isLandscape = (): boolean => window.orientation === 90 || window.orientation === -90
+const amLandscape = (): boolean => window.orientation === 90 || window.orientation === -90
 
-const formatPortrait = (): boolean => window.orientation == 0
+const amPortrait = (): boolean => window.orientation == 0
 
 // =============================================================================
 // MARK: Size
@@ -223,7 +238,7 @@ const S = (selector: string): HTMLCollection < Elem > | null | Elem => {
   }
 }
 
-const have = (elem: any): boolean => elem !== undefined
+const have = (elem: any): boolean => elem !== undefined && elem !== null
 
 // =============================================================================
 // MARK: CREATORS
@@ -304,16 +319,28 @@ const setZindex = (z: number = 0, ...elem: Elem[]): string[] => elem.map(e => e.
 
 const bkgColor = (color: string, ...elem: Elem[]): string[] => elem.map(e => e.style.backgroundColor = color)
 
+const parseDimensionString = (value: string | number):string => {
+  if (value === 'auto')return value
+  const vwvh: RegExp = /vw|vh/gi
+  const result: string = typeof value === 'string' ?
+    vwvh.test(value) ?
+    `${value}` :
+    `${value}%` :
+    `${value}px`
+    return result
+}
+
 const setPM = (type: string) => (x: number, ...elem: Elem[]): void => {
   const style: string[] = ['margin', 'padding']
   const pm: number = style.indexOf(type)
+  const value = parseDimensionString(x)
   elem.map(e => {
     switch (pm) {
       case 0:
-        e.style.margin = `${x}px`
+        e.style.margin = value
         break;
       case 1:
-        e.style.padding = `${x}px`
+        e.style.padding = value    
         break;
       default:
         console.error('margin/padding');
@@ -336,31 +363,26 @@ const setTransition = (prop: string, duration: number, ease: string, ...elem: El
 }
 
 const setDim = (dim: string) => (x: string | number, ...elem: Elem[]): void => {
-  const vwvh: RegExp = /vw|vh/gi
-  const result: string = typeof x === 'string' ?
-    vwvh.test(x) ?
-    `${x}` :
-    `${x}%` :
-    `${x}px`
+  const value: string = parseDimensionString(x)
   elem.map(e => {
     switch (dim) {
       case 'width':
-        e.style.width = result
+        e.style.width = value
         break;
       case 'height':
-        e.style.height = result
+        e.style.height = value
         break;
       case 'top':
-        e.style.top = result
+        e.style.top = value
         break;
       case 'bottom':
-        e.style.bottom = result
+        e.style.bottom = value
         break;
       case 'right':
-        e.style.right = result
+        e.style.right = value
         break;
       case 'left':
-        e.style.left = result
+        e.style.left = value
         break;
       default:
         console.error('dimension');
@@ -377,17 +399,11 @@ const setBottom = setDim('bottom')
 const setRight = setDim('right')
 const setLeft = setDim('left')
 
-//TODO: styles function
-
-
 const css = (selector: any, styles: {}) => {
-  const sheet = window.creative.sheet
-  const index = sheet.cssRules.length
   for (const key in styles) {
     if (styles.hasOwnProperty(key)) {
       const style = styles[key];
       selector.style[key] = style
-
     }
   }
 }
@@ -396,12 +412,16 @@ const css = (selector: any, styles: {}) => {
 // MARK: VIDEO to CANVAS
 // =============================================================================
 
-function VideoOnCanvas(src: SrcType | string, container: Elem, size: Size, resize: OptionResize, namePlus ? : string) {
+function VideoOnCanvas(src: SrcType | string, container: Elem, size: Size, opt ? : OptVideoCanvas) {
   this.src = src
   this.container = container
   this.size = size
-  this.namePlus = namePlus
-  this.resize = resize
+  if (opt) {
+    this.opt = opt
+    this.namePlus = opt.namePlus
+    this.resize = opt.resize
+    this.bkgCanvas = opt.backgroundCanvas ? opt.backgroundCanvas : false
+  }
   this.builtVideo()
 }
 
@@ -436,10 +456,11 @@ VideoOnCanvas.prototype = {
   },
   builtCanvas: function () {
     this.canvas = document.createElement('canvas')
+    this.canvas.style.zIndex = '42'
     this.canvas.id = this.namePlus ? `canvas${this.namePlus}` : 'canvas',
       this.canvas.classList.add('canvas')
     this.canvas.style.position = 'absolute'
-    if (this.resize !== 'stretch') {
+    if (this.resize !== 'stretch' && this.bkgCanvas) {
       this.canvasBkg = document.createElement('canvas')
       this.canvasBkg.id = this.namePlus ? `canvasBkg${this.namePlus}` : 'canvasBkg',
         this.canvasBkg.classList.add('canvasBkg')
@@ -448,7 +469,7 @@ VideoOnCanvas.prototype = {
     if (typeof this.src == 'string') {
       this.video.addEventListener('loadedmetadata', () => {
         getSize(this.video).then(r => {
-          const canvasPlacement = resizeFromOtion(this.resize, r, this.size)
+          const canvasPlacement = resizeFromOption(this.resize, r, this.size)
           this.canvas.width = canvasPlacement.width
           this.canvas.height = canvasPlacement.height
           this.canvas.style.left = canvasPlacement.left + 'px'
@@ -462,7 +483,7 @@ VideoOnCanvas.prototype = {
         })
       })
     } else {
-      const canvasPlacement = resizeFromOtion(this.resize, {
+      const canvasPlacement = resizeFromOption(this.resize, {
         width: this.src.width,
         height: this.src.height
       }, this.size)
@@ -503,12 +524,14 @@ VideoOnCanvas.prototype = {
   clickable: function (time: number, tracker: string) {
     makeTracker(this, 'clickable', time, tracker, true)
     return this
+  },
+  get duration() {
+    return this.video.duration
   }
 }
 
 const playCanvas = (elem: any) => {
   elem.video.addEventListener('play', () => {
-    if (elem.video.paused || elem.video.ended) return;
     if (elem.canvasBkg) {
       draw(elem.video, elem.canvas, elem.canvasBkg)
     } else {
@@ -518,12 +541,14 @@ const playCanvas = (elem: any) => {
 }
 
 const draw = (video: HTMLVideoElement, canvas: HTMLCanvasElement, canvasBkg ? : HTMLCanvasElement) => {
+  
   if (canvasBkg) {
     let ctx = canvas.getContext('2d')
     let ctxBkg = canvasBkg.getContext('2d')
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
     ctxBkg.drawImage(video, 0, 0, canvasBkg.width, canvasBkg.height)
-    // ctxBkg.filter= 'blur(3px)'
+    // $FlowFixMe
+    ctxBkg.filter = 'blur(10px)'
     requestAnimationFrame(() => {
       draw(video, canvas, canvasBkg)
     })
@@ -538,12 +563,11 @@ const makeTracker = (object: {
   video: HTMLVideoElement,
   container: Elem
 }, name: string, time: number, src: string, clickable ? : boolean = false) => {
-  var elem
   object.video.addEventListener('timeupdate', function (e) {
     if (e.target instanceof HTMLVideoElement) {
-      if (e.target.currentTime >= e.target.duration * time && elem === undefined) {
+      if (e.target.currentTime >= e.target.duration * time) {
         if (clickable) {
-          elem = new CreateElem({
+          new CreateElem({
             name: name,
             tag: 'a',
             href: src,
@@ -554,7 +578,7 @@ const makeTracker = (object: {
             append: object.container
           })
         } else {
-          elem = new CreateElem({
+          new CreateElem({
             name: name,
             tag: 'img',
             src: src,
@@ -569,10 +593,9 @@ const makeTracker = (object: {
   })
 }
 
-const resizeFromOtion = (resize: OptionResize, videoSize: Size, mainSize: Size): CanvasPlacement => {
+const resizeFromOption = (resize: OptionResize, videoSize: Size, mainSize: Size): CanvasPlacement => {
   const ratioVideo = videoSize.height / videoSize.width
   const ratioWrapper = mainSize.height / mainSize.width
-  //ratioVideo <= ratioWrapper ratio plus large que l'écran
   switch (resize) {
     case 'stretch':
       return {
@@ -767,9 +790,9 @@ export {
   getInt,
   amMraid,
   getSize,
-  isIos,
-  isLandscape,
-  formatPortrait,
+  amIphone,
+  amLandscape,
+  amPortrait,
   computeSize,
   select,
   selectClass,
