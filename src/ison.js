@@ -465,7 +465,8 @@ VideoOnCanvas.prototype = {
         this.canvasBkg.classList.add('canvasBkg')
       this.canvasBkg.style.position = 'absolute'
     }
-    if (typeof this.src == 'string') {
+    if (typeof this.src == 'string' || this.src.width == null) {
+      console.log('console.log(): ', this.src.width);
       this.video.addEventListener('loadedmetadata', () => {
         getSize(this.video).then(r => {
           const canvasPlacement = resizeFromOption(this.resize, r, this.size)
