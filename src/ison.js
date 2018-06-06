@@ -466,9 +466,14 @@ VideoOnCanvas.prototype = {
       this.canvasBkg.style.position = 'absolute'
     }
     if (typeof this.src == 'string' || this.src.width == null) {
-      console.log('console.log(): ', this.src.width);
       this.video.addEventListener('loadedmetadata', () => {
         getSize(this.video).then(r => {
+          if(typeof this.src == 'object') {
+            this.src.width = r.width
+            this.src.height = r.height
+            console.log('this.src: ', this.src);
+            console.log(window.creative.data);
+          }
           const canvasPlacement = resizeFromOption(this.resize, r, this.size)
           this.canvas.width = canvasPlacement.width
           this.canvas.height = canvasPlacement.height
