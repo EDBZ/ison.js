@@ -127,7 +127,6 @@ const createNewCreative = (options: OptionCreateCreative) => {
         appendToDom(head, meta, title)
       }
       computeSize().then(r => {
-          console.log('r: ', r);
           if (window.creative === undefined) {
             window.creative = {
               size: r
@@ -563,11 +562,12 @@ const makeTracker = (object: {
   video: HTMLVideoElement,
   container: Elem
 }, name: string, time: number, src: string, clickable ? : boolean = false) => {
+  let elem
   object.video.addEventListener('timeupdate', function (e) {
     if (e.target instanceof HTMLVideoElement) {
-      if (e.target.currentTime >= e.target.duration * time) {
+      if (e.target.currentTime >= e.target.duration * time && elem === undefined) {
         if (clickable) {
-          new CreateElem({
+          elem = new CreateElem({
             name: name,
             tag: 'a',
             href: src,
@@ -578,7 +578,7 @@ const makeTracker = (object: {
             append: object.container
           })
         } else {
-          new CreateElem({
+          elem = new CreateElem({
             name: name,
             tag: 'img',
             src: src,
